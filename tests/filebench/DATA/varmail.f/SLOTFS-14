@@ -1,0 +1,32 @@
+-------Initialize SlotFS----------
+Filebench Version 1.5-alpha3
+0.000: Allocated 177MB of shared memory
+0.009: Populating and pre-allocating filesets
+0.012: bigfileset populated: 10000 files, avg. dir. width = 5000, avg. dir. depth = 1.1, 0 leafdirs, 312.500MB total size
+0.012: Removing bigfileset tree (if exists)
+-------Initialize SlotFS----------
+8.293: Pre-allocating directories in bigfileset tree
+8.293: Pre-allocating files in bigfileset tree
+8.442: Waiting for pre-allocation to finish (in case of a parallel pre-allocation)
+8.442: Population and pre-allocation of filesets completed
+8.442: Starting 1 filereader instances
+13.706: Running...
+23.707: Run took 10 seconds...
+23.707: Per-Operation Breakdown
+closefile4           930238ops    93017ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.010ms]
+readfile4            930238ops    93017ops/s 385.2mb/s    0.004ms/op [0.001ms - 0.119ms]
+openfile4            930240ops    93017ops/s   0.0mb/s    0.010ms/op [0.001ms - 0.118ms]
+closefile3           930243ops    93018ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.014ms]
+fsyncfile3           930243ops    93018ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.006ms]
+appendfilerand3      930243ops    93018ops/s 181.6mb/s    0.003ms/op [0.001ms - 0.067ms]
+readfile3            930243ops    93018ops/s 385.5mb/s    0.004ms/op [0.001ms - 0.120ms]
+openfile3            930245ops    93018ops/s   0.0mb/s    0.010ms/op [0.001ms - 0.554ms]
+closefile2           930247ops    93018ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.010ms]
+fsyncfile2           930247ops    93018ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.005ms]
+appendfilerand2      930247ops    93018ops/s 181.7mb/s    0.002ms/op [0.001ms - 0.027ms]
+createfile2          930249ops    93018ops/s   0.0mb/s    0.014ms/op [0.002ms - 2.953ms]
+deletefile1          930250ops    93018ops/s   0.0mb/s    0.002ms/op [0.001ms - 0.089ms]
+23.707: IO Summary: 12093173 ops 1209229.631 ops/s 186035/186036 rd/wr 1134.0mb/s 0.004ms/op
+23.707: Shutting down processes
+Unload Slotfs
+

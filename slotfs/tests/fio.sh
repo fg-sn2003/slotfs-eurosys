@@ -1,0 +1,1 @@
+LD_PRELOAD=build/libslot.so fio -filename=\\fio-test -fallocate=none -direct=0 -iodepth 1 -rw=write -ioengine=sync -bs=32k -size=100M -name=test

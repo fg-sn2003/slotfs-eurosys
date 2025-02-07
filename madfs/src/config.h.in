@@ -1,0 +1,138 @@
+#pragma once
+
+#include <ostream>
+
+// see https://cmake.org/cmake/help/latest/command/configure_file.html
+#cmakedefine01 MADFS_MAP_SYNC
+#cmakedefine01 MADFS_MAP_POPULATE
+#cmakedefine01 MADFS_TX_FLUSH_ONLY_FSYNC
+#cmakedefine01 MADFS_USE_PMEMCHECK
+#cmakedefine01 MADFS_TIMER
+#cmakedefine01 MADFS_CC_OCC
+#cmakedefine01 MADFS_CC_MUTEX
+#cmakedefine01 MADFS_CC_SPINLOCK
+#cmakedefine01 MADFS_CC_RWLOCK
+
+#cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
+
+#ifndef __has_feature
+#define __has_feature(x) 0
+#endif
+
+#if __has_feature(memory_sanitizer)
+#include <sanitizer/msan_interface.h>
+// ref:
+// https://github.com/llvm/llvm-project/blob/main/compiler-rt/include/sanitizer/msan_interface.h
+#else
+#define __msan_unpoison(...) ({})
+#define __msan_scoped_disable_interceptor_checks(...) ({})
+#define __msan_scoped_enable_interceptor_checks(...) ({})
+#endif
+
+#if MADFS_USE_PMEMCHECK == 1
+#include <valgrind/pmemcheck.h>
+// ref: https://pmem.io/valgrind/generated/pmc-manual.html
+#else
+#define VALGRIND_PMC_REMOVE_PMEM_MAPPING(...) ({})
+#define VALGRIND_PMC_REGISTER_PMEM_MAPPING(...) ({})
+#define VALGRIND_PMC_SET_CLEAN(...) ({})
+#define VALGRIND_PMC_DO_FLUSH(...) ({})
+#endif
+
+namespace madfs {
+
+constexpr static struct BuildOptions {
+  constexpr static const char* build_type = CMAKE_BUILD_TYPE;
+  constexpr static bool map_sync = MADFS_MAP_SYNC;
+  constexpr static bool map_populate = MADFS_MAP_POPULATE;
+  constexpr static bool tx_flush_only_fsync = MADFS_TX_FLUSH_ONLY_FSYNC;
+  constexpr static bool use_pmemcheck = MADFS_USE_PMEMCHECK;
+  constexpr static bool enable_timer = MADFS_TIMER;
+  constexpr static bool cc_occ = MADFS_CC_OCC;
+  constexpr static bool cc_mutex = MADFS_CC_MUTEX;
+  constexpr static bool cc_spinlock = MADFS_CC_SPINLOCK;
+  constexpr static bool cc_rwlock = MADFS_CC_RWLOCK;
+  static_assert(cc_occ + cc_mutex + cc_spinlock + cc_rwlock == 1);
+
+#ifndef NDEBUG
+  constexpr static bool debug = true;
+#else
+  constexpr static bool debug = false;
+#endif
+
+#ifdef __CLWB__
+  constexpr static bool support_clwb = true;
+#else
+  constexpr static bool support_clwb = false;
+#endif
+
+#ifdef __CLFLUSHOPT__
+  constexpr static bool support_clflushopt = true;
+#else
+  constexpr static bool support_clflushopt = false;
+#endif
+
+#ifdef __AVX512F__
+  constexpr static bool support_avx512f = !use_pmemcheck;
+#else
+  constexpr static bool support_avx512f = false;
+#endif
+
+  friend std::ostream& operator<<(std::ostream& out,
+                                  [[maybe_unused]] const BuildOptions& opt) {
+    __msan_scoped_disable_interceptor_checks();
+    out << "BuildOptions: \n";
+
+    out << "\tbuild type:\n";
+    out << "\t\tname: " << build_type << "\n";
+    out << "\t\tdebug: " << debug << "\n";
+    out << "\t\tuse_pmemcheck: " << use_pmemcheck << "\n";
+
+    out << "\thardware support:\n";
+    out << "\t\tclwb: " << support_clwb << "\n";
+    out << "\t\tclflushopt: " << support_clflushopt << "\n";
+    out << "\t\tavx512f: " << support_avx512f << "\n";
+
+    out << "\tfeatures: \n";
+    out << "\t\tmap_sync: " << map_sync << "\n";
+    out << "\t\tmap_populate: " << map_populate << "\n";
+    out << "\t\ttx_flush_only_fsync: " << tx_flush_only_fsync << "\n";
+    out << "\t\tenable_timer: " << enable_timer << "\n";
+
+    out << "\tconcurrency control:\n";
+    out << "\t\tcc_occ: " << cc_occ << "\n";
+    out << "\t\tcc_mutex: " << cc_mutex << "\n";
+    out << "\t\tcc_spinlock: " << cc_spinlock << "\n";
+    out << "\t\tcc_rwlock: " << cc_rwlock << "\n";
+    __msan_scoped_enable_interceptor_checks();
+
+    return out;
+  }
+} build_options;
+
+static struct RuntimeOptions {
+  bool show_config{true};
+  bool strict_offset_serial{false};
+  const char* log_file{};
+  int log_level{1};
+
+  RuntimeOptions() noexcept {
+    if (std::getenv("MADFS_NO_SHOW_CONFIG")) show_config = false;
+    if (std::getenv("MADFS_NO_STRICT_OFFSET")) strict_offset_serial = false;
+    log_file = std::getenv("MADFS_LOG_FILE");
+    if (auto str = std::getenv("MADFS_LOG_LEVEL"); str)
+      log_level = std::atoi(str);
+  };
+
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const RuntimeOptions& opt) {
+    out << "RuntimeOptions: \n";
+    out << "\tshow_config: " << opt.show_config << "\n";
+    out << "\tstrict_offset_serial: " << opt.strict_offset_serial << "\n";
+    out << "\tlog_file: " << (opt.log_file ? opt.log_file : "None") << "\n";
+    out << "\tlog_level: " << opt.log_level << "\n";
+    return out;
+  }
+} runtime_options;
+
+}  // namespace madfs

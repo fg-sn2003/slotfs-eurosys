@@ -1,0 +1,26 @@
+2024-10-18 14:03:48,794 - INFO - Running FIO with sw
+2024-10-18 14:03:48,794 - INFO - Running command: sudo umount /mnt/pmem0
+2024-10-18 14:03:48,858 - INFO - Running command: make clean
+2024-10-18 14:03:48,866 - INFO - Running command: export LEDGER_DATAJ=1
+2024-10-18 14:03:48,869 - INFO - Running command: export LEDGER_POSIX=0
+2024-10-18 14:03:48,871 - INFO - Running command: export LEDGER_FIO=1
+2024-10-18 14:03:48,874 - INFO - Running command: sudo umount /mnt/pmem0
+2024-10-18 14:03:48,893 - ERROR - Error running command: sudo umount /mnt/pmem0
+2024-10-18 14:03:48,893 - ERROR - Error: umount: /mnt/pmem0: not mounted.
+
+2024-10-18 14:03:48,893 - INFO - Running command: sudo mkfs.ext4 -F -b 4096 /dev/pmem0
+2024-10-18 14:03:49,383 - INFO - Running command: sudo mount -t ext4 -o dax /dev/pmem0 /mnt/pmem0
+2024-10-18 14:03:49,406 - INFO - Running command: export LD_LIBRARY_PATH=/home/zyf/nvmfs/wofs/splitfs/splitfs&& export NVP_TREE_FILE=/home/zyf/nvmfs/wofs/splitfs/splitfs/bin/nvp_nvp.tree&&LD_PRELOAD=/home/zyf/nvmfs/wofs/splitfs/splitfs/libnvp.so fio --fallocate=none --direct=0 --iodepth=1 --ioengine=sync --name=test --bs=4k --rw=write --size=2G  --filename=/mnt/pmem0/test --numjobs=1
+2024-10-18 14:03:54,768 - INFO - Running FIO with rw
+2024-10-18 14:03:54,768 - INFO - Running command: sudo umount /mnt/pmem0
+2024-10-18 14:03:54,790 - INFO - Running command: make clean
+2024-10-18 14:03:54,797 - INFO - Running command: export LEDGER_DATAJ=1
+2024-10-18 14:03:54,801 - INFO - Running command: export LEDGER_POSIX=0
+2024-10-18 14:03:54,803 - INFO - Running command: export LEDGER_FIO=1
+2024-10-18 14:03:54,806 - INFO - Running command: sudo umount /mnt/pmem0
+2024-10-18 14:03:54,826 - ERROR - Error running command: sudo umount /mnt/pmem0
+2024-10-18 14:03:54,826 - ERROR - Error: umount: /mnt/pmem0: not mounted.
+
+2024-10-18 14:03:54,826 - INFO - Running command: sudo mkfs.ext4 -F -b 4096 /dev/pmem0
+2024-10-18 14:03:55,318 - INFO - Running command: sudo mount -t ext4 -o dax /dev/pmem0 /mnt/pmem0
+2024-10-18 14:03:55,341 - INFO - Running command: export LD_LIBRARY_PATH=/home/zyf/nvmfs/wofs/splitfs/splitfs&& export NVP_TREE_FILE=/home/zyf/nvmfs/wofs/splitfs/splitfs/bin/nvp_nvp.tree&&LD_PRELOAD=/home/zyf/nvmfs/wofs/splitfs/splitfs/libnvp.so fio --fallocate=none --direct=0 --iodepth=1 --ioengine=sync --name=test --bs=4k --rw=randwrite --size=2G  --filename=/mnt/pmem0/test --numjobs=1

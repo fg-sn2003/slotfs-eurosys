@@ -1,0 +1,13 @@
+ops file_system file_size blk_size bandwidth(MiB/s)
+seq-overwrite MadFS 1024 4096B 1803
+rnd-overwrite MadFS 1024 4096B 1588
+seq-write MadFS 1024 4096B 960
+rnd-write MadFS 1024 4096B 941
+seq-read MadFS 1024 4096B 1730
+rnd-read MadFS 1024 4096B 1583
+seq-overwrite MadFS 1024 32768B 2081
+rnd-overwrite MadFS 1024 32768B 2090
+seq-write MadFS 1024 32768B 970
+rnd-write MadFS 1024 32768B 964
+seq-read MadFS 1024 32768B 2456
+rnd-read MadFS 1024 32768B 2398

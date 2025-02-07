@@ -1,0 +1,20 @@
+-------Initialize SlotFS----------
+Filebench Version 1.5-alpha3
+0.000: Allocated 177MB of shared memory
+0.009: Populating and pre-allocating filesets
+0.016: bigfileset populated: 10000 files, avg. dir. width = 20, avg. dir. depth = 3.1, 0 leafdirs, 1250.000MB total size
+0.016: Removing bigfileset tree (if exists)
+-------Initialize SlotFS----------
+10.255: Pre-allocating directories in bigfileset tree
+10.273: Pre-allocating files in bigfileset tree
+10.882: Waiting for pre-allocation to finish (in case of a parallel pre-allocation)
+10.882: Population and pre-allocation of filesets completed
+10.882: Starting 1 filereader instances
+16.323: Running...
+17.323: Run took 1 seconds...
+17.323: Shutting down processes
+-------Initialize SlotFS----------
+Unload Slotfs
+
+Unload Slotfs
+

@@ -1,0 +1,1 @@
+int mkfs(char* path);
