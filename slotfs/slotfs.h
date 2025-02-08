@@ -471,8 +471,14 @@ static inline long dax_size_safe(const char *path)
 
 static inline int file_exist_safe(const char *path)
 {
-	struct stat st;
-	return stat(path, &st) == 0;
+	// struct stat st;
+	// return stat(path, &st) == 0;
+	int fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		return 0;
+	}
+	close(fd);
+	return 1;
 }
 
 #endif // SLOTFS_H

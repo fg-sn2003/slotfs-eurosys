@@ -28,7 +28,7 @@ void arena_init(arena_t* allocator, void *mem, size_t size, size_t item_size) {
 
 void* arena_alloc(arena_t* allocator) {
     spin_lock(&allocator->lock);
-    if (allocator->free_list == NULL) {
+    if (unlikely(allocator->free_list == NULL)) {
         spin_unlock(&allocator->lock);
         printf("type %d\n", allocator->type);
         debug_assert(0);

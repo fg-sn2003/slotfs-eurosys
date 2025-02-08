@@ -41,7 +41,7 @@ index_t do_slot_alloc(dram_bitmap_t *bitmaps) {
 }
 
 //best effort slot allocation
-#define SEARCH_ROUND 5
+#define SEARCH_ROUND 10
 index_t slot_be_alloc(dram_bitmap_t *bitmaps) {
     index_t index = -1;
     size_t start_bitmap = sched_getcpu() % map_num;
@@ -246,21 +246,21 @@ void slot_dirent_free(inode_t* inode, index_t index) {
 }
 
 index_t slot_firent_alloc(inode_t* inode) {
-    index_t index = slot_try_cache_alloc(sbi->maps[SLOT_FILE], 
-        &inode->f_slot_cache, &inode->f_slot_cache_off);
-    if (index != -1) {
-        // printf("cache alloc index = %ld\n", index);
-        return index;
-    }
+    // index_t index = slot_try_cache_alloc(sbi->maps[SLOT_FILE], 
+    //     &inode->f_slot_cache, &inode->f_slot_cache_off);
+    // if (index != -1) {
+    //     // printf("cache alloc index = %ld\n", index);
+    //     return index;
+    // }
     
-    index = slot_be_alloc(sbi->maps[SLOT_FILE]);
-    if (unlikely(index != -1)) {
-        inode->f_slot_cache = index;
-        inode->f_slot_cache_off = 1;
-        // printf("be alloc index = %ld\n", index);
-    }
-    return index;
-    // return do_slot_alloc(sbi->maps[SLOT_FILE]);
+    // index = slot_be_alloc(sbi->maps[SLOT_FILE]);
+    // if (unlikely(index != -1)) {
+    //     inode->f_slot_cache = index;
+    //     inode->f_slot_cache_off = 1;
+    //     // printf("be alloc index = %ld\n", index);
+    // }
+    // return index;
+    return do_slot_alloc(sbi->maps[SLOT_FILE]);
 }
 
 void slot_firent_free(inode_t* inode, index_t index) {

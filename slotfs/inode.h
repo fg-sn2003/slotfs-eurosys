@@ -118,4 +118,5 @@ ssize_t     inode_readlink(inode_t *inode, char *link);
 void        inode_release(inode_t *inode);
 void        do_inode_release(inode_t *inode);
 int         inode_resize(inode_t *inode, size_t new_size);
+filent_t*   filent_lookup(inode_t *file, index_t idx);
 #endif // INODE_H

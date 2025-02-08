@@ -43,14 +43,15 @@ typedef struct {
 
 int dir_index_insert(inode_t *dir, dirent_t *d);
 
-int filent_insert_callback(void *ptr, void* ctx) {
+int filent_insert_callback(void *ptr, int idx, void* ctx) {
     filent_t *fe = (filent_t *)ptr;
     fe->ref--;
+    filent_ctx_t *fctx = (filent_ctx_t *)ctx;
+    inode_t *inode = fctx->inode;
+    slot_data_free(inode, fe->p_idx + (idx - fe->l_idx), 1);
     debug_assert(fe->ref >= 0);
     
     if (fe->ref == 0) {
-        filent_ctx_t *fctx = (filent_ctx_t *)ctx;
-        inode_t *inode = fctx->inode;
         list_add_tail(&fe->invalid_list, &inode->invalid);
         inode->invalid_num++;
     }
@@ -117,8 +118,8 @@ filent_t* filent_lookup(inode_t *file, index_t idx) {
     assert(a == b);
     return a;
 #endif
-    filent_t *fe = btree_get_hint(tree, idx, &file->b_hint);
-    // filent_t *fe = btree_get(tree, idx);
+    // filent_t *fe = btree_get_hint(tree, idx, &file->b_hint);
+    filent_t *fe = btree_get(tree, idx);
 
     return fe;
 }
@@ -338,7 +339,7 @@ int dir_index_insert(inode_t *dir, dirent_t *d) {
 int file_index_insert(inode_t *file, filent_t *fe) {
     static unsigned long total_time = 0;
     btree_t *tree = &file->b_root;
-    filent_ctx_t fctx = { .inode = file };
+    filent_ctx_t fctx = { .inode = file};
     int ret = btree_set_range_callback(tree, fe->l_idx, 
         fe->l_idx + fe->blocks, fe, filent_insert_callback, &fctx);
     // int ret =  btree_set_range_hint_callbak(tree, fe->l_idx, 
@@ -458,14 +459,14 @@ filent_t* file_append_entry(inode_t *inode, pm_filent_t* entry) {
     } else {
         fe = filent_alloc();
         if (unlikely(!fe)) return ERR_PTR(-ENOMEM);
-
+        
         fno = inode->ghost_slot;
         if (unlikely(is_symlink(inode))) {
             inode->ghost_slot = 0;
         } else {
             inode->ghost_slot = slot_firent_alloc(inode);
         }
-
+        
         if (unlikely(inode->ghost_slot < -1)) {
             inode->ghost_slot = fno;
             filent_free(fe);
@@ -484,14 +485,14 @@ filent_t* file_append_entry(inode_t *inode, pm_filent_t* entry) {
 
     ret = file_index_insert(inode, fe);
     debug_assert(!ret);
+    
     pm_filent_t *pf = (pm_filent_t *)REL2ABS(IDX2FENT(fno));
-    pf->blocks = entry->blocks;
-    pf->l_idx  = entry->l_idx;
-    pf->p_idx  = entry->p_idx;
-    pf->ts     = entry->ts;
-    pf->next   = reuse ? reuse_next : inode->ghost_slot;
-    pf->csum   = crc32c(0, (uint8_t *)entry, sizeof(pm_filent_t));
-    flush_cache(pf, sizeof(pm_filent_t), 1);
+    
+    sfence();
+    entry->next = reuse ? reuse_next : inode->ghost_slot;
+    entry->csum = crc32c(0, (uint8_t *)entry, sizeof(pm_filent_t));
+    avx_cpy(pf, entry, sizeof(pm_filent_t));
+    sfence();
     
     if (!reuse) {
         inode->entry_num++;
@@ -515,7 +516,6 @@ ssize_t inode_readlink(inode_t *inode, char *link) {
 
 ssize_t inode_read(inode_t *inode, void *buf, size_t len, off_t offset) {
     unsigned long idx, start_idx, end_idx;
-    
     if (len > inode->i_size - offset) {
         len = inode->i_size - offset;
     }
@@ -525,7 +525,8 @@ ssize_t inode_read(inode_t *inode, void *buf, size_t len, off_t offset) {
     idx = offset >> PAGE_SHIFT;
     start_idx = idx;
     end_idx = (offset + len - 1) >> PAGE_SHIFT;
-    range_lock(&inode->r_lock, start_idx, end_idx);
+    // range_lock(&inode->r_lock, start_idx, end_idx);
+    inode_lock(inode->i_ino);
     do {
         /* nr is the maximum number of bytes to copy in this iterations */
         unsigned long page_offset = offset & PAGE_MASK;
@@ -561,7 +562,8 @@ ssize_t inode_read(inode_t *inode, void *buf, size_t len, off_t offset) {
         offset += nr;
     } while (left > 0);
 
-    range_unlock(&inode->r_lock, start_idx, end_idx);
+    inode_unlock(inode->i_ino);
+    // range_unlock(&inode->r_lock, start_idx, end_idx);
     return len;
 }
 
@@ -617,6 +619,11 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
     c = offset;
     count = len;
     entry_num = 0;
+
+    struct timespec start, end;
+    static int round = 0;
+    static unsigned long total_time = 0;
+
     if (unlikely(num_blk == 1 && len < 1024 && c != inode->i_size)) {
         ret = inode_write_journal(inode, buf, len, offset);
         if (ret > 0)
@@ -624,7 +631,7 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
     }
     ebuf_t *ebuf = ebuf_alloc();
     // range_lock(&inode->r_lock, _start_blk, _end_blk);
-
+    inode_lock(inode->i_ino);
     while (num_blk > 0) {
         unsigned long page_offset = c & PAGE_MASK;
         unsigned long nr = 0;
@@ -648,6 +655,7 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
             num_blk -= 1;
             goto write_next;
         }
+
         allocated = num_blk;
         nr = slot_data_alloc(inode, &allocated);
         if (unlikely(nr < 0)) {
@@ -695,8 +703,8 @@ write_next:
         buf += bytes;
         count -= bytes;
     }
-
-    inode_lock(inode->i_ino);
+    
+    // inode_lock(inode->i_ino);
     time_t ts = slotfs_timestamp();
     int idx = 0;
     while(idx < entry_num) {
@@ -706,21 +714,23 @@ write_next:
         pf.p_idx = unit->p_idx;
         pf.blocks = unit->blocks;
         pf.ts = ts;
+
         filent_t *fe = file_append_entry(inode, &pf);
         if (IS_ERR(fe)) {
             ret = PTR_ERR(fe);
             inode_unlock(inode->i_ino);
             goto error;
         }
-        idx++;
+        idx++;    
     }
     inode_unlock(inode->i_ino);
-    // range_unlock(&inode->r_lock, _start_blk, _end_blk);
     ebuf_put(ebuf);
 
     inode->i_size = max(inode->i_size, offset + len);
     inode->i_ctim = inode->i_mtim = time(NULL);
+
     return len;
+    
 error:
     assert(0);
     range_unlock(&inode->r_lock, _start_blk, end_blk);
@@ -855,9 +865,9 @@ void do_inode_release(inode_t *inode) {
         for (filent_t *f; !list_empty(&inode->list); ) {
             f = list_entry(inode->list.next, filent_t, list);
             slot_data_free(inode, f->p_idx, f->blocks);
-            pm_filent_t *pf = (pm_filent_t *)REL2ABS(IDX2FENT(f->idx));
-            pf->next = 0;
-            flush_byte(&pf->next);
+            // pm_filent_t *pf = (pm_filent_t *)REL2ABS(IDX2FENT(f->idx));
+            // pf->next = 0;
+            // flush_byte(&pf->next);
             
             list_del(&f->list);
             filent_free(f);

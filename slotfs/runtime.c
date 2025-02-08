@@ -39,6 +39,7 @@ again:
 void fd_free(int fd) {
     spin_lock(&rt.lock);
     atomic_store(&rt.f_table[fd].valid, false);
+    rt.f_table[fd].file = NULL;
     spin_unlock(&rt.lock);
     // rt.fd_hint = fd;
 }

@@ -440,6 +440,7 @@ OP_DEFINE(OPENAT) {
             int ret = slotfs_open(dirfd, p, oflag, mode);
             if (ret < 0 && *path != '\\') {
                 return real_ops.OPENAT(dirfd, path, oflag, mode);
+                return ret;
             }
             return ret + FD_OFFSET;
         } else {

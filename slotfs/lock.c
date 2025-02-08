@@ -30,6 +30,9 @@ void range_lock(range_lock_t *lock, uint64_t start, uint64_t end) {
         for (int i = 0; i < RLOCK_NUM; i++) {
             if (lock->rlock[i].valid && is_overlap(start, end, lock->rlock[i].start, lock->rlock[i].end)) {
                 overlap = true;
+                // for (int i = 0; i < 1000000; i++) {
+                    
+                // }
                 break;
             }
         }

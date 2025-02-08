@@ -155,12 +155,11 @@ int shm_map(char *name) {
         perror("shm_open");
         return fd;
     }
-
     ret = ftruncate(fd, SHM_SIZE);
     if (ret < 0) 
         return ret;
 
-    shm_base = mmap((void *)SHM_BASE, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    shm_base = mmap((void *)SHM_BASE, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, fd, 0);
     if (shm_base != (void *)SHM_BASE) {
         logger_fail("shm base address error: %p\n", shm_base);
         return -1;

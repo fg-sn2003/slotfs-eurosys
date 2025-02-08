@@ -1,0 +1,32 @@
+Initialize SlotFS
+Filebench Version 1.5-alpha3
+0.000: Allocated 177MB of shared memory
+0.006: Populating and pre-allocating filesets
+0.010: bigfileset populated: 10000 files, avg. dir. width = 5000, avg. dir. depth = 1.1, 0 leafdirs, 312.500MB total size
+0.010: Removing bigfileset tree (if exists)
+Initialize SlotFS
+0.863: Pre-allocating directories in bigfileset tree
+0.863: Pre-allocating files in bigfileset tree
+1.025: Waiting for pre-allocation to finish (in case of a parallel pre-allocation)
+1.025: Population and pre-allocation of filesets completed
+1.025: Starting 1 filereader instances
+2.494: Running...
+12.496: Run took 10 seconds...
+12.496: Per-Operation Breakdown
+closefile4           779690ops    77963ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.006ms]
+readfile4            779690ops    77963ops/s 327.3mb/s    0.003ms/op [0.001ms - 0.072ms]
+openfile4            779690ops    77963ops/s   0.0mb/s    0.002ms/op [0.001ms - 1.429ms]
+closefile3           779690ops    77963ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.016ms]
+fsyncfile3           779690ops    77963ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.005ms]
+appendfilerand3      779691ops    77963ops/s 152.3mb/s    0.004ms/op [0.001ms - 0.039ms]
+readfile3            779692ops    77964ops/s 340.0mb/s    0.003ms/op [0.001ms - 0.037ms]
+openfile3            779692ops    77964ops/s   0.0mb/s    0.002ms/op [0.001ms - 0.641ms]
+closefile2           779692ops    77964ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.007ms]
+fsyncfile2           779692ops    77964ops/s   0.0mb/s    0.000ms/op [0.000ms - 0.006ms]
+appendfilerand2      779692ops    77964ops/s 152.1mb/s    0.002ms/op [0.001ms - 0.023ms]
+createfile2          779692ops    77964ops/s   0.0mb/s    0.005ms/op [0.001ms - 4.023ms]
+deletefile1          779693ops    77964ops/s   0.0mb/s    0.002ms/op [0.001ms - 3.990ms]
+12.496: IO Summary: 10135986 ops 1013525.728 ops/s 155927/155927 rd/wr 971.6mb/s 0.002ms/op
+12.496: Shutting down processes
+Unload Slotfs
+

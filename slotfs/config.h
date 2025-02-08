@@ -22,7 +22,7 @@
 #define DAX_SIZE    0x100000000                 
 #else
 #define DEVICE "/dev/dax1.0"
-#define DAX_SIZE    (8UL * 1024 * 1024 * 1024)                 
+#define DAX_SIZE    (32UL * 1024 * 1024 * 1024)                 
 #endif
 
 #define SLOTFS_SHM_NAME "slotfs_shm"
@@ -50,16 +50,16 @@
 #define MAX_LOOP        10      
 #define FD_OFFSET	    1024
 #define FD_MAX		    (4096 * 2)
-#define MAP_NUM         16
+#define MAP_NUM         1
 /* shm layout */
 // TODO: 
 #define SHM_BASE    0x700000000000
-#define SHM_SIZE    (1024UL * 1024 * 1024)					
-#define HEAP_SIZE   (10UL * 1024 * 1024)
+#define SHM_SIZE    (2UL * 1024 * 1024 * 1024)					
+#define HEAP_SIZE   (20UL * 1024 * 1024)
 #define HEAP_START  (SHM_BASE + SHM_SIZE - HEAP_SIZE)
-#define BNODE_ARENA (128UL * 1024 * 1024)
-#define INODE_ARENA (128UL * 1024 * 1024)
-#define ENTRY_ARENA (512UL * 1024 * 1024)
+#define BNODE_ARENA (256UL * 1024 * 1024)
+#define INODE_ARENA (256UL * 1024 * 1024)
+#define ENTRY_ARENA (1024UL * 1024 * 1024)
 #define DAX_START   0x780000000000
 
 /* pm layout*/

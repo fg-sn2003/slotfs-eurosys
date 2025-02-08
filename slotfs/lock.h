@@ -19,7 +19,7 @@ static inline int spin_trylock(spinlock_t *lock) {
 	return pthread_spin_trylock(lock);
 }
 
-#define RLOCK_NUM 10
+#define RLOCK_NUM 20
 typedef struct {
 	uint64_t start;
 	uint64_t end;

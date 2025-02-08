@@ -200,7 +200,7 @@ int btree_set_range_hint_callbak(btree_t *tree, size_t start, size_t end, void *
 }
 
 int btree_set_range_callback(btree_t *tree, size_t start, size_t end, 
-    void *ptr, int (*callback)(void *, void *), void* ctx) {
+    void *ptr, int (*callback)(void *, int, void *), void* ctx) {
     if (!tree || start >= end) return -1;
 
     while (end >= max_keys[tree->height]) {
@@ -213,7 +213,7 @@ int btree_set_range_callback(btree_t *tree, size_t start, size_t end,
 
     do {
         void *old_ptr = pos.node->children[pos.index];
-        if (old_ptr && callback && callback(old_ptr, ctx)) {
+        if (old_ptr && callback && callback(old_ptr, start, ctx)) {
             return -1;
         }
         pos.node->children[pos.index] = ptr;

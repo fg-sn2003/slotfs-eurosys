@@ -54,7 +54,7 @@ typedef struct filent {     //file entry
 struct pm_filent {
     uint32_t   l_idx;
     uint32_t   p_idx;
-    uint16_t   blocks;
+    uint32_t   blocks;
 
     time_t     ts;
     index_t    next;

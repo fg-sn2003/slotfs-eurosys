@@ -396,13 +396,13 @@ int slotfs_close(int fd) {
     }
 
     inode_t *inode = rt.f_table[fd].file;
+    debug_assert(inode);
     inode_lock(inode->i_ino);
     inode->ref--;
     if (inode->ref == 0 && inode->i_link == 0) {
         index_t ino = inode->i_ino;
         inode_release(inode);
         sbi->inode_table[ino].inode = NULL;
-        // do_inode_release(inode);
         inode_unlock(ino);
     } else if (inode->ref == 0) {
         inode_flush(inode);

@@ -11,7 +11,7 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 
-#define BRANCH_NUM (128)
+#define BRANCH_NUM (256)
 #define MAX_LEVELS (10)
 
 typedef struct btree_node {
@@ -39,7 +39,7 @@ btree_t*    btree_create(btree_t *tree);
 void        btree_destroy(btree_t *tree);
 int         btree_set_range(btree_t *tree, size_t start, size_t end, void *ptr);
 int         btree_set_range_callback(btree_t *tree, size_t start, size_t end, 
-    void *ptr, int (*callback)(void *, void *), void* ctx); 
+    void *ptr, int (*callback)(void *, int, void *), void* ctx); 
 int         btree_set_range_hint_callbak(btree_t *tree, size_t start, size_t end, void *ptr, 
     btree_ptr *hint, int (*callback)(void *, void *), void *ctx);
 int         btree_set(btree_t *tree, size_t key, void *ptr);
