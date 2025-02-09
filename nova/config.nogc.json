@@ -1,0 +1,19 @@
+{
+    "modules": {
+        "measure_timing": 1,
+        "metadata_checksum": 0,
+        "wprotect": 0,
+        "disable_gc": 1,
+        "data_checksum": 0,
+        "data_parity": 0,
+        "DRAM_checksum": 0,
+        "fragment": 0,
+        "enhance": 0
+    },
+    "fs": {
+        "init":	1,
+        "snapshot": 0,	  
+        "data_cow": 1,	    
+        "wprotect":	0  
+    }
+}

@@ -1,0 +1,166 @@
+[259390.850871] nova: Arch new instructions support: CLWB YES
+[259390.850876] nova: Data structure size: inode 120, log_page 4096, file_write_entry 64, dir_entry(max) 304, setattr_entry 56, link_change_entry 40
+[259391.868553] nova: 32 cpus online
+[259391.868557] nova: nova_get_nvmm_info: dev pmem0, phys_addr 0x2148200000, virt_addr 0xffff9121c8200000, size 211390824448
+[259391.868558] nova: measure timing 1, metadata checksum 0, wprotect 0, data checksum 0, data parity 0, DRAM checksum 0
+[259391.868642] nova: Start NOVA snapshot cleaner thread.
+[259391.868643] nova: Enable copy-on-write updates
+[259391.868644] nova: NOVA: Enabling new Write Protection (CR0.WP)
+[259391.868658] nova: Running snapshot cleaner thread
+[259391.868659] nova: creating an empty nova of size 211390824448
+[259391.897723] nova: NOVA initialization finish
+[259391.897729] nova: Current epoch id: 0
+[259397.625244] nova: Current epoch id: 0
+[259397.625303] nova: =========== NOVA kernel timing stats ============
+[259397.625303] nova: 
+                ================ Initialization ================
+
+[259397.625304] nova: init: count 1, timing 56062, average 56062
+[259397.625304] nova: mount: count 1, timing 29188313, average 29188313
+[259397.625305] nova: ioremap: count 0, timing 0, average 0
+[259397.625305] nova: new_init: count 1, timing 29073047, average 29073047
+[259397.625306] nova: recovery: count 0, timing 0, average 0
+[259397.625306] nova: 
+                ============= Directory operations =============
+
+[259397.625307] nova: create: count 1, timing 17161, average 17161
+[259397.625307] nova: lookup: count 1, timing 696, average 696
+[259397.625308] nova: link: count 0, timing 0, average 0
+[259397.625308] nova: unlink: count 0, timing 0, average 0
+[259397.625309] nova: symlink: count 0, timing 0, average 0
+[259397.625309] nova: mkdir: count 0, timing 0, average 0
+[259397.625309] nova: rmdir: count 0, timing 0, average 0
+[259397.625310] nova: mknod: count 0, timing 0, average 0
+[259397.625311] nova: rename: count 0, timing 0, average 0
+[259397.625311] nova: readdir: count 0, timing 0, average 0
+[259397.625311] nova: add_dentry: count 1, timing 3855, average 3855
+[259397.625312] nova: remove_dentry: count 0, timing 0, average 0
+[259397.625312] nova: setattr: count 1, timing 5656, average 5656
+[259397.625313] nova: setsize: count 1, timing 560, average 560
+[259397.625313] nova: 
+                ================ I/O operations ================
+
+[259397.625313] nova: dax_read: count 0, timing 0, average 0
+[259397.625314] nova: do_cow_write: count 1048576, timing 4871152244, average 4645
+[259397.625315] nova: cow_write: count 1048576, timing 4930641719, average 4702
+[259397.625315] nova: inplace_write: count 0, timing 0, average 0
+[259397.625316] nova: copy_to_nvmm: count 0, timing 0, average 0
+[259397.625316] nova: dax_get_block: count 0, timing 0, average 0
+[259397.625316] nova: read_iter: count 0, timing 0, average 0
+[259397.625317] nova: write_iter: count 0, timing 0, average 0
+[259397.625317] nova: wrap_iter: count 0, timing 0, average 0
+[259397.625318] nova: 
+                ============== Memory operations ===============
+
+[259397.625318] nova: memcpy_read_nvmm: count 0, timing 0, average 0
+[259397.625319] nova: memcpy_write_nvmm: count 1048576, timing 1413299492, average 1347
+[259397.625319] nova: memcpy_write_back_to_nvmm: count 0, timing 0, average 0
+[259397.625320] nova: handle_partial_block: count 0, timing 0, average 0
+[259397.625320] nova: 
+                ============== Memory management ===============
+
+[259397.625321] nova: alloc_blocks: count 1048715, timing 39176917, average 37
+[259397.625321] nova: new_data_blocks: count 1048576, timing 80369776, average 76
+[259397.625322] nova: new_log_blocks: count 139, timing 28916041, average 208029
+[259397.625322] nova: free_blocks: count 532604, timing 46124869, average 86
+[259397.625323] nova: free_data_blocks: count 524288, timing 65849938, average 125
+[259397.625323] nova: free_log_blocks: count 8316, timing 932161, average 112
+[259397.625324] nova: 
+                ================= Transaction ==================
+
+[259397.625324] nova: transaction_new_inode: count 1, timing 1974, average 1974
+[259397.625325] nova: transaction_link_change: count 0, timing 0, average 0
+[259397.625325] nova: update_tail: count 1048580, timing 20802161, average 19
+[259397.625326] nova: 
+                ============= Logging operations ===============
+
+[259397.625326] nova: append_dir_entry: count 1, timing 2391, average 2391
+[259397.625327] nova: append_file_entry: count 1048576, timing 1135322174, average 1082
+[259397.625327] nova: append_mmap_entry: count 0, timing 0, average 0
+[259397.625328] nova: append_link_change: count 0, timing 0, average 0
+[259397.625328] nova: append_setattr: count 1, timing 3922, average 3922
+[259397.625328] nova: append_snapshot_info: count 0, timing 0, average 0
+[259397.625329] nova: inplace_update_entry: count 0, timing 0, average 0
+[259397.625329] nova: 
+                =============== Tree operations ================
+
+[259397.625330] nova: checking_entry: count 0, timing 0, average 0
+[259397.625330] nova: assign_blocks: count 1048576, timing 836736311, average 797
+[259397.625331] nova: 
+                ============= Garbage collection ===============
+
+[259397.625331] nova: log_fast_gc: count 73, timing 172454203, average 2362386
+[259397.625332] nova: log_thorough_gc: count 0, timing 0, average 0
+[259397.625332] nova: check_invalid_log: count 418358, timing 8740473, average 20
+[259397.625332] nova: 
+                ============ Integrity operations ==============
+
+[259397.625333] nova: block_csum: count 0, timing 0, average 0
+[259397.625333] nova: block_parity: count 0, timing 0, average 0
+[259397.625334] nova: block_csum_parity: count 0, timing 0, average 0
+[259397.625334] nova: protect_memcpy: count 0, timing 0, average 0
+[259397.625334] nova: protect_file_data: count 0, timing 0, average 0
+[259397.625335] nova: verify_entry_csum: count 0, timing 0, average 0
+[259397.625335] nova: verify_data_csum: count 0, timing 0, average 0
+[259397.625336] nova: calc_entry_csum: count 0, timing 0, average 0
+[259397.625336] nova: restore_file_data: count 0, timing 0, average 0
+[259397.625336] nova: reset_mapping: count 0, timing 0, average 0
+[259397.625337] nova: reset_vma: count 0, timing 0, average 0
+[259397.625337] nova: 
+                ================ Miscellaneous =================
+
+[259397.625338] nova: find_cache_page: count 0, timing 0, average 0
+[259397.625338] nova: fsync: count 1, timing 105, average 105
+[259397.625338] nova: write_pages: count 0, timing 0, average 0
+[259397.625339] nova: fallocate: count 0, timing 0, average 0
+[259397.625339] nova: direct_IO: count 0, timing 0, average 0
+[259397.625340] nova: free_old_entry: count 524288, timing 448975764, average 856
+[259397.625340] nova: delete_file_tree: count 1, timing 24029734, average 24029734
+[259397.625340] nova: delete_dir_tree: count 1, timing 1159, average 1159
+[259397.625341] nova: new_vfs_inode: count 1, timing 9150, average 9150
+[259397.625341] nova: new_nova_inode: count 1, timing 756, average 756
+[259397.625342] nova: free_inode: count 0, timing 0, average 0
+[259397.625342] nova: free_inode_log: count 0, timing 0, average 0
+[259397.625343] nova: evict_inode: count 2, timing 24032011, average 12016005
+[259397.625343] nova: test_perf: count 0, timing 0, average 0
+[259397.625344] nova: wprotect: count 7424322, timing 1623625304, average 218
+[259397.625344] nova: 
+                =============== MMap operations ================
+
+[259397.625344] nova: mmap_page_fault: count 0, timing 0, average 0
+[259397.625345] nova: mmap_pmd_fault: count 0, timing 0, average 0
+[259397.625345] nova: mmap_pfn_mkwrite: count 0, timing 0, average 0
+[259397.625346] nova: insert_vma: count 0, timing 0, average 0
+[259397.625346] nova: remove_vma: count 0, timing 0, average 0
+[259397.625347] nova: set_vma_readonly: count 0, timing 0, average 0
+[259397.625347] nova: mmap_cow: count 0, timing 0, average 0
+[259397.625347] nova: udpate_mapping: count 0, timing 0, average 0
+[259397.625348] nova: udpate_pfn: count 0, timing 0, average 0
+[259397.625348] nova: mmap_handler: count 0, timing 0, average 0
+[259397.625348] nova: 
+                =================== Rebuild ====================
+
+[259397.625349] nova: rebuild_dir: count 1, timing 1593, average 1593
+[259397.625349] nova: rebuild_file: count 0, timing 0, average 0
+[259397.625350] nova: rebuild_snapshot_table: count 0, timing 0, average 0
+[259397.625350] nova: 
+                =================== Snapshot ===================
+
+[259397.625350] nova: create_snapshot: count 0, timing 0, average 0
+[259397.625351] nova: init_snapshot_info: count 0, timing 0, average 0
+[259397.625351] nova: delete_snapshot: count 0, timing 0, average 0
+[259397.625352] nova: append_snapshot_filedata: count 0, timing 0, average 0
+[259397.625352] nova: append_snapshot_inode: count 0, timing 0, average 0
+[259397.625352] nova: 
+[259397.625353] nova: =========== NOVA allocation stats ===========
+[259397.625353] nova: Alloc 1048576, alloc steps 1048715, average 1
+[259397.625354] nova: Free 524288
+[259397.625354] nova: Fast GC 73, check pages 418358, free pages 8316, average 113
+[259397.625355] nova: Thorough GC 0, checked pages 0, free pages 0, average 0
+[259397.625357] nova: alloc log count 139, allocated log pages 33313, alloc data count 1048576, allocated data pages 1048576, free log count 8316, freed log pages 8316, free data count 524288, freed data pages 524288
+[259397.625357] nova: =========== NOVA I/O stats ===========
+[259397.625358] nova: Read 0, bytes 0, average 0
+[259397.625358] nova: COW write 1048576, bytes 4294967296, average 4096, write breaks 1048576, average 1
+[259397.625359] nova: Inplace write 0, bytes 0, average 0, write breaks 0, average 0
+[259397.625440] nova: nova_save_inode_list_to_log: 32 inode nodes, pi head 0x238f1c7000, tail 0x238f1c7200
+[259397.625484] nova: nova_save_blocknode_mappings_to_log: 33 blocknodes, 1 log pages, pi head 0x238f1c8000, tail 0x238f1c8210
