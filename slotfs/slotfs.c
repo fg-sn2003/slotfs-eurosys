@@ -8,6 +8,7 @@
 #include "recover.h"
 #include "slotfs_func.h"
 #include "gather.h" 
+#include <syslog.h>
 
 dram_sb_t* sbi;
 
@@ -97,7 +98,6 @@ void release_thread() {
     while (1) {
         logger_trace("release thread running\n");
         if (sbi->status == STATUS_EXIT) {
-            printf("Release thread exit\n");
             break;
         }
         spin_lock(&sbi->release_lock);
@@ -106,7 +106,7 @@ void release_thread() {
             sleep(1);
             continue;
         }
-
+        
         inode_t *inode = list_entry(sbi->release_list.next, inode_t, release);
         list_del(&inode->release);
         spin_unlock(&sbi->release_lock);
@@ -123,7 +123,7 @@ int init_dramon() {
 int slotfs_init() {
     int ret;
     int recovered = 0;
-    
+
     ret = dax_map(DEVICE);
     assert(ret == 0);
 

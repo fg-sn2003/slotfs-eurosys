@@ -1,0 +1,2 @@
+real.sec user.sec nice.sec sys.sec idle.sec iowait.sec irq.sec softirq.sec steal.sec guest.sec user.util nice.util sys.util idle.util iowait.util irq.util softirq.util steal.util guest.util
+4.61906 2.12 0 7.08 138.39 0.11 0 0.12 0 0 1.43418 0 4.78961 93.6206 0.0744148 0 0.0811798 0 0

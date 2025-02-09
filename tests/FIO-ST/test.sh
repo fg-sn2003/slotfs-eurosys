@@ -18,7 +18,7 @@ BLK_SIZES=($((1 * 1024))B  $((4 * 1024))B $((16 * 1024))B)
 # FILE_SYSTEMS=("SLOTFS")
 # BLK_SIZES=($((1 * 1024))B  $((4 * 1024))B  $((16 * 1024))B)
 
-TABLE_NAME="$ABS_PATH/performance-comparison-table-bsize"
+TABLE_NAME="$ABS_PATH/performance-comparison-table"
 table_create "$TABLE_NAME" "ops file_system file_size blk_size bandwidth(MiB/s)"
 
 loop=1

@@ -289,7 +289,8 @@ inode_t* inode_create(inode_t *parent, const char* name, int name_len, mode_t mo
     }
     // write the inode to the pm and atomic append the entry that points to inode
     inode_flush(inode);
-
+    sfence();
+    
     dirent_t* d = dir_append_entry(parent, inode, name, name_len);
     
     if (unlikely(IS_ERR(d))) {

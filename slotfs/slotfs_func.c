@@ -77,7 +77,6 @@ static inode_t* do_slotfs_open(int dfd, const char *path, int flags, mode_t mode
         inode_unlock(parent->i_ino);
         return inode;
     }
-
     inode = inode_create(parent, nd.last, nd.last_len, mode);
     inode->ref++;
     icache_install(inode);
@@ -394,11 +393,11 @@ int slotfs_close(int fd) {
         set_errno(-EBADFD);
         return -1;
     }
-
     inode_t *inode = rt.f_table[fd].file;
     debug_assert(inode);
     inode_lock(inode->i_ino);
     inode->ref--;
+
     if (inode->ref == 0 && inode->i_link == 0) {
         index_t ino = inode->i_ino;
         inode_release(inode);

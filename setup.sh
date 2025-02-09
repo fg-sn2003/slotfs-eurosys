@@ -1,6 +1,8 @@
 sudo ndctl disable-namespace all
 sudo ndctl destroy-namespace all --force
-sudo ndctl create-namespace -m devdax 
+#/dev/dax1.0 for SlotFS
+sudo ndctl create-namespace -m devdax
+#/dev/pmem0 for others
+sudo ndctl create-namespace -m fsdax
+ndctl list --region=0 --namespaces --human --idle
 
-echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
-apt-get install libboost-all-dev ndctl numactl

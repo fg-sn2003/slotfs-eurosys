@@ -22,7 +22,7 @@
 #define DAX_SIZE    0x100000000                 
 #else
 #define DEVICE "/dev/dax1.0"
-#define DAX_SIZE    (32UL * 1024 * 1024 * 1024)                 
+#define DAX_SIZE    (48UL * 1024 * 1024 * 1024)                 
 #endif
 
 #define SLOTFS_SHM_NAME "slotfs_shm"
