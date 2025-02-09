@@ -64,10 +64,10 @@ fi
 echo "Drop caches..."
 sync
 echo 1 | sudo tee /proc/sys/vm/drop_caches
-sync
-echo 1 | sudo tee /proc/sys/vm/drop_caches
-sync
-echo 1 | sudo tee /proc/sys/vm/drop_caches
+# sync
+# echo 1 | sudo tee /proc/sys/vm/drop_caches
+# sync
+# echo 1 | sudo tee /proc/sys/vm/drop_caches
 
 # setup
 case "${fs}" in
@@ -75,10 +75,20 @@ case "${fs}" in
     cd "$NOVA_PATH" || exit
     git checkout "$branch"
     if ((measure_timing == 1)); then
-        bash setup.sh
+        bash setup.sh "$CONFIGS_PATH"/nova/config.mt.json
     else
         bash setup.sh
     fi
+    ;;
+"NOVA-nogc")
+    cd "$NOVA_PATH" || exit
+    git checkout "$branch"
+    bash setup.sh "$CONFIGS_PATH"/nova/config.nogc.json
+    ;;
+"NOVA-fragment")
+    cd "$NOVA_PATH" || exit
+    git checkout "$branch"
+    bash setup.sh "$CONFIGS_PATH"/nova/config.fragment.json
     ;;
 "PMFS")
     cd "$PMFS_PATH" || exit

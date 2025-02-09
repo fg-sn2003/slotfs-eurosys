@@ -708,18 +708,12 @@ static ssize_t do_nova_cow_file_write(struct file *filp,
 	
 
 	epoch_id = nova_get_epoch_id(sb);
-	// if (fragment) {
-	// 	/* write to random place */
-	// 	unsigned long rand = 100000 + get_random_u32() % 10000;
-	// 	rand = nova_get_block_off(sb, rand, 0);
-	// 	sih->log_tail = rand;
-	// }
-	// unsigned long rand = 100000 + get_random_u32() % 10000;
-	// if (rand % 3 == 0) {
-	// 	rand = nova_get_block_off(sb, rand, 0);
-	// 	sih->log_tail = rand;
-	// }
-	// sih->log_tail = sih->log_tail + 256;
+	if (fragment) {
+		/* write to random place */
+		unsigned long rand = 10000000 + get_random_u32() % 100000;
+		rand = nova_get_block_off(sb, rand, 0);
+		sih->log_tail = rand;
+	}
 	update.tail = sih->log_tail;
 	update.alter_tail = sih->alter_log_tail;
 	// TODO: Write Pattern in FS can be performed like this
