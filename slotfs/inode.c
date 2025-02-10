@@ -568,6 +568,113 @@ ssize_t inode_read(inode_t *inode, void *buf, size_t len, off_t offset) {
     return len;
 }
 
+ssize_t inode_write_inplace(inode_t *inode, const void *buf, size_t len, off_t offset) {
+    size_t page_offset, c;
+    unsigned long num_blk, start_blk, _start_blk, end_blk, _end_blk;
+    size_t bytes, count, entry_num;
+    void *pmem;
+    int ret; 
+
+    page_offset = offset & PAGE_MASK;
+    num_blk     = (len + page_offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
+    start_blk   = offset >> PAGE_SHIFT;
+    end_blk     = start_blk + num_blk - 1;
+    _start_blk  = start_blk;
+    _end_blk    = end_blk;
+    c = offset;
+    count = len;
+    entry_num = 0;
+
+    ebuf_t *ebuf = ebuf_alloc();
+
+    // range_lock(&inode->r_lock, _start_blk, _end_blk);
+    inode_lock(inode->i_ino); 
+    while (num_blk > 0) {
+        page_offset = c & PAGE_MASK;
+        start_blk = c >> PAGE_SHIFT;
+        
+        filent_t *fe;
+        if (c == inode->i_size && page_offset == 0) {
+            fe = NULL;
+        } else {
+            fe = filent_lookup(inode, start_blk);
+        }
+        
+        // inplace write
+        if (fe) {
+            bytes = (fe->blocks + fe->l_idx - start_blk) << PAGE_SHIFT - page_offset;
+            if (bytes > count) 
+                bytes = count;
+            
+            pmem = (void *)REL2ABS(IDX2DATA(fe->p_idx + (start_blk - fe->l_idx)));
+            avx_cpy(pmem + page_offset, buf, bytes);
+            num_blk -= (bytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
+        } else {
+            unsigned long nr = 0;
+            unsigned long allocated = num_blk;
+            nr = slot_data_alloc(inode, &allocated);
+            if (unlikely(nr < 0)) {
+                ret = -ENOSPC;
+                debug_assert(0);      
+                goto error;
+            }
+            pmem = (void *)REL2ABS(IDX2DATA(nr));
+            bytes = PAGE_SIZE * allocated - page_offset;
+            if (bytes > count)
+                bytes = count;
+
+            avx_cpy(pmem + page_offset, buf, bytes);
+            ebuf_add(ebuf, start_blk, nr, allocated);
+            entry_num++;
+            num_blk -= allocated;
+        }
+
+        c += bytes;
+        buf += bytes;
+        count -= bytes;
+    }
+
+    if (entry_num > 0) {
+        time_t ts = slotfs_timestamp();
+        int idx = 0;
+        while(idx < entry_num) {
+            entry_unit_t *unit = ebuf_get(ebuf, idx);
+            pm_filent_t pf;
+            pf.l_idx = unit->l_idx;
+            pf.p_idx = unit->p_idx;
+            pf.blocks = unit->blocks;
+            pf.ts = ts;
+    
+            filent_t *fe = file_append_entry(inode, &pf);
+            if (IS_ERR(fe)) {
+                ret = PTR_ERR(fe);
+                inode_unlock(inode->i_ino);
+                goto error;
+            }
+            idx++;    
+        }
+    }
+    inode_unlock(inode->i_ino);
+    ebuf_put(ebuf);
+
+    inode->i_size = max(inode->i_size, offset + len);
+    inode->i_ctim = inode->i_mtim = time(NULL);
+
+    sfence();
+    pm_inode_t *pi = (pm_inode_t *)REL2ABS(IDX2INODE(inode->i_ino));
+    pi->i_size = inode->i_size;
+    pi->i_ctim = inode->i_ctim;
+    flush_cache(pi, sizeof(pm_inode_t), 0);
+
+    return len;
+error:
+    debug_assert(0);
+    inode_unlock(inode->i_ino);
+    // range_unlock(&inode->r_lock, _start_blk, end_blk);
+    ebuf_put(ebuf);
+    return ret;
+}
+
 // just for testing purpose: test the upper boundaries bandwidth
 ssize_t inode_write_fake(inode_t *inode, const void *buf, size_t len, off_t offset) {
     static int i = 0;
@@ -621,10 +728,6 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
     count = len;
     entry_num = 0;
 
-    struct timespec start, end;
-    static int round = 0;
-    static unsigned long total_time = 0;
-
     if (unlikely(num_blk == 1 && len < 1024 && c != inode->i_size)) {
         ret = inode_write_journal(inode, buf, len, offset);
         if (ret > 0)
@@ -632,6 +735,7 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
     }
     ebuf_t *ebuf = ebuf_alloc();
     // range_lock(&inode->r_lock, _start_blk, _end_blk);
+
     inode_lock(inode->i_ino);
     while (num_blk > 0) {
         unsigned long page_offset = c & PAGE_MASK;
@@ -641,7 +745,6 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
         // if the write is small and can write in place at the end of the file
         if (c == inode->i_size && page_offset && num_blk == 1) {
             filent_t* fe = filent_lookup(inode, start_blk);
-            
             debug_assert(fe);
             debug_assert(start_blk >= fe->l_idx && start_blk <= fe->l_idx + fe->blocks);
             bytes = PAGE_SIZE - page_offset;
@@ -652,8 +755,12 @@ ssize_t inode_write_atomic(inode_t *inode, const void *buf, size_t len, off_t of
             logger_trace("%s: append small write %lu bytes at offset %lu, pmem: %p\n",
                  __func__, bytes, c, pmem + page_offset);
             avx_cpy(pmem + page_offset, buf, bytes);
-
             num_blk -= 1;
+            sfence();
+            pm_inode_t *pi = (pm_inode_t *)REL2ABS(IDX2INODE(inode->i_ino));
+            pi->i_size = inode->i_size = max(inode->i_size, offset + len);
+            flush_byte(&pi->i_size);
+            
             goto write_next;
         }
 
@@ -733,14 +840,19 @@ write_next:
     return len;
     
 error:
-    assert(0);
-    range_unlock(&inode->r_lock, _start_blk, end_blk);
+    debug_assert(0);
+    inode_unlock(inode->i_ino);
+    // range_unlock(&inode->r_lock, _start_blk, end_blk);
     ebuf_put(ebuf);
     return ret;
 }
 
 ssize_t inode_write(inode_t *inode, const void *buf, size_t len, off_t offset) {
+#ifdef INPLACE_WRITE
+    return inode_write_inplace(inode, buf, len, offset);
+#else
     return inode_write_atomic(inode, buf, len, offset);
+#endif
     // return inode_write_fake(inode, buf, len, offset);
 }
 
@@ -751,13 +863,15 @@ int inode_extend(inode_t *inode, size_t new_size) {
     int ret;
     void *pmem;
 
+    // printf("inode_extend: inode %lu, new_size %lu\n", inode->i_ino, new_size);
     page_offset = inode->i_size & PAGE_MASK;
     start_blk = (inode->i_size + PAGE_SIZE - 1) >> PAGE_SHIFT;
     _start_blk = start_blk;
     _end_blk = start_blk + num_blk - 1;
     num_blk = (new_size - inode->i_size + PAGE_SIZE - 1) / PAGE_SIZE;
 
-    range_lock(&inode->r_lock, _start_blk, _end_blk);
+    inode_lock(inode->i_ino);
+    // range_lock(&inode->r_lock, _start_blk, _end_blk);
     ebuf_t *ebuf = ebuf_alloc();
     if (page_offset) {
         fe = filent_lookup(inode, start_blk);
@@ -775,6 +889,7 @@ int inode_extend(inode_t *inode, size_t new_size) {
     while (num_blk > 0) {
         unsigned long allocated = num_blk;
         unsigned long nr = slot_data_alloc(inode, &allocated);
+        // printf("loop2\n");
         if (unlikely(nr < 0)) {
             return -ENOSPC;
         }
@@ -788,7 +903,6 @@ int inode_extend(inode_t *inode, size_t new_size) {
     } 
 
     int idx = 0;
-    inode_lock(inode->i_ino);
     while (idx < ebuf->num) {
         entry_unit_t *unit = ebuf_get(ebuf, idx);
         pm_filent_t pf;
@@ -805,13 +919,14 @@ int inode_extend(inode_t *inode, size_t new_size) {
     }
     ebuf_put(ebuf);
     inode_unlock(inode->i_ino);
-    range_unlock(&inode->r_lock, _start_blk, _end_blk);
+    // printf("return from inode_extend\n");
+    // range_unlock(&inode->r_lock, _start_blk, _end_blk);
     return 0;
 error:
     //todo: rollback
     ebuf_put(ebuf);
     inode_unlock(inode->i_ino);
-    range_unlock(&inode->r_lock, _start_blk, _end_blk);
+    // range_unlock(&inode->r_lock, _start_blk, _end_blk);
     return ret;
 }
 

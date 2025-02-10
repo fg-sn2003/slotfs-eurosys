@@ -42,7 +42,7 @@ static inode_t* do_slotfs_open(int dfd, const char *path, int flags, mode_t mode
     if (unlikely(IS_ERR(nd.start))) {
         return nd.start;
     }
-
+    
     if (!(flags & O_CREAT)) {
         ret = path_lookup(&nd);
         if (unlikely(ret)) {
@@ -62,6 +62,12 @@ static inode_t* do_slotfs_open(int dfd, const char *path, int flags, mode_t mode
     }
 
     nd.flags |= ND_PARENT;
+    while (*nd.path == '/') {
+        nd.path++;
+    }
+    if (!*nd.path) {
+        return sbi->root;
+    }
     ret = path_lookup(&nd);
     if (ret)
         return ERR_PTR(ret);

@@ -275,7 +275,7 @@ OP_DEFINE(XSTAT64) {
         insert_real_op();
     }
 
-    syscall_trace("XSTAT64: %s\n", path);
+    syscall_trace("XSTAT64: %s\n", path); 
     if (*path == '\\' || *path != '/') {
         const char *p = path;
         while (*p == '\\') p++;
@@ -360,6 +360,9 @@ OP_DEFINE(LSTAT64) {
     return lstat(path, (struct stat*)buf);
 }
 
+OP_DEFINE(LSTAT64_TIME64) {
+    return lstat(path, (struct stat*)buf);
+}
 
 /*******************************************************
  * open functions
@@ -420,7 +423,8 @@ OP_DEFINE(OPENAT) {
 
     syscall_trace("OPENAT: %s, create: %s, oflag: %x\n", 
         path, (oflag & O_CREAT) ? "yes" : "no", oflag);
-
+    printf("OPENAT: %s, create: %s, oflag: %x\n", 
+        path, (oflag & O_CREAT) ? "yes" : "no", oflag);
     if (*path == '\\' || *path != '/') {
         const char *p = path;
         while (*p == '\\') p++;
@@ -482,6 +486,14 @@ OP_DEFINE(OPEN64) {
     return open(path, oflag, mode);
 }
 
+OP_DEFINE(OPENAT64) {
+    va_list ap;
+    mode_t mode;
+    va_start(ap, oflag);
+    mode = va_arg(ap, mode_t);
+    
+    return openat(dirfd, path, oflag, mode);
+}
 
 OP_DEFINE(LIBC_OPEN64) {
     va_list ap;

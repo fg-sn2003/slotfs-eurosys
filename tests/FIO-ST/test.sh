@@ -10,15 +10,15 @@ SLOTFS_DIR=$ABS_PATH/../../slotfs
 MADFS_DIR=$ABS_PATH/../../madfs
 
 FILE_SIZES=($((1 * 1024)))
-# FILE_SYSTEMS=("SLOTFS" "MADFS" "NOVA" "PMFS" "SplitFS-FIO" "EXT4-DAX")
-FILE_SYSTEMS=("SplitFS" "SLOTFS")
+FILE_SYSTEMS=("SLOTFS" "MadFS" "NOVA" "PMFS" "SplitFS-FIO" "EXT4-DAX")
+# FILE_SYSTEMS=( "SLOTFS")
 # BLK_SIZES=(512B $((1 * 1024))B  $((2 * 1024))B $((4 * 1024))B $((8 * 1024))B $((16 * 1024))B $((32 * 1024))B)
 BLK_SIZES=($((1 * 1024))B  $((4 * 1024))B $((16 * 1024))B)
 
 # FILE_SYSTEMS=("SLOTFS")
 # BLK_SIZES=($((1 * 1024))B  $((4 * 1024))B  $((16 * 1024))B)
 
-TABLE_NAME="$ABS_PATH/performance-comparison-table"
+TABLE_NAME="$ABS_PATH/performance-table"
 table_create "$TABLE_NAME" "ops file_system file_size blk_size bandwidth(MiB/s)"
 
 loop=1
@@ -40,6 +40,7 @@ for ((i = 1; i <= loop; i++)); do
                     export NVP_TREE_FILE="$BOOST_DIR"/bin/nvp_nvp.tree
                     BW=$(LD_PRELOAD=$BOOST_DIR/libnvp.so fio -filename="/mnt/pmem0/test" --overwrite=1 -fallocate=none -direct=0 -iodepth 1 -rw=write -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
                 elif [[ "${file_system}" == "MadFS" ]]; then
+                    rm -rf /dev/shm/*
                     bash "$TOOLS_PATH"/setup.sh "$file_system" "null" "0"
                     export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
                     BW=$(LD_PRELOAD=$MADFS_DIR/build-release/libmadfs.so fio -filename="/mnt/pmem0/test" --overwrite=1 --fsync=1 -fallocate=none -direct=0 -iodepth 1 -rw=write -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
@@ -60,6 +61,7 @@ for ((i = 1; i <= loop; i++)); do
                     export NVP_TREE_FILE="$BOOST_DIR"/bin/nvp_nvp.tree
                     BW=$(LD_PRELOAD=$BOOST_DIR/libnvp.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 --overwrite=1 -iodepth 1 -rw=randwrite -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
                 elif [[ "${file_system}" == "MadFS" ]]; then
+                    rm -rf /dev/shm/*
                     bash "$TOOLS_PATH"/setup.sh "$file_system" "null" "0"
                     export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
                     BW=$(LD_PRELOAD=$MADFS_DIR/build-release/libmadfs.so fio -filename="/mnt/pmem0/test" -fallocate=none --fsync=1 --overwrite=1 -direct=0 -iodepth 1 -rw=randwrite -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
@@ -79,6 +81,7 @@ for ((i = 1; i <= loop; i++)); do
                     export NVP_TREE_FILE="$BOOST_DIR"/bin/nvp_nvp.tree
                     BW=$(LD_PRELOAD=$BOOST_DIR/libnvp.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=write -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
                 elif [[ "${file_system}" == "MadFS" ]]; then
+                    rm -rf /dev/shm/*
                     bash "$TOOLS_PATH"/setup.sh "$file_system" "null" "0"
                     export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
                     BW=$(LD_PRELOAD=$MADFS_DIR/build-release/libmadfs.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=write -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
@@ -99,6 +102,7 @@ for ((i = 1; i <= loop; i++)); do
                     export NVP_TREE_FILE="$BOOST_DIR"/bin/nvp_nvp.tree
                     BW=$(LD_PRELOAD=$BOOST_DIR/libnvp.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=randwrite -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
                 elif [[ "${file_system}" == "MadFS" ]]; then
+                    rm -rf /dev/shm/*
                     bash "$TOOLS_PATH"/setup.sh "$file_system" "null" "0"
                     export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
                     BW=$(LD_PRELOAD=$MADFS_DIR/build-release/libmadfs.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=randwrite -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep WRITE: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
@@ -118,6 +122,7 @@ for ((i = 1; i <= loop; i++)); do
                     export NVP_TREE_FILE="$BOOST_DIR"/bin/nvp_nvp.tree
                     BW=$(LD_PRELOAD=$BOOST_DIR/libnvp.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=read -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep READ: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
                 elif [[ "${file_system}" == "MadFS" ]]; then
+                    rm -rf /dev/shm/*
                     bash "$TOOLS_PATH"/setup.sh "$file_system" "null" "0"
                     export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
                     BW=$(LD_PRELOAD=$MADFS_DIR/build-release/libmadfs.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=read -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep READ: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
@@ -137,6 +142,7 @@ for ((i = 1; i <= loop; i++)); do
                     export NVP_TREE_FILE="$BOOST_DIR"/bin/nvp_nvp.tree
                     BW=$(LD_PRELOAD=$BOOST_DIR/libnvp.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=randread -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep READ: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
                 elif [[ "${file_system}" == "MadFS" ]]; then
+                    rm -rf /dev/shm/*
                     bash "$TOOLS_PATH"/setup.sh "$file_system" "null" "0"
                     export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
                     BW=$(LD_PRELOAD=$MADFS_DIR/build-release/libmadfs.so fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw=randread -ioengine=sync -bs="$bsize" -size="$fsize"M -name=test | grep READ: | awk '{print $2}' | sed 's/bw=//g' | "$TOOLS_PATH"/converter/to_MiB_s)
@@ -149,3 +155,4 @@ for ((i = 1; i <= loop; i++)); do
         done
     done
 done
+

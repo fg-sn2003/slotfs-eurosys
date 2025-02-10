@@ -34,6 +34,7 @@ static void* shm_init_bitmap(void *base) {
             pm_start   += bytes;
             dram_start += bytes;
         }
+        dram_start = (void *)ALIGN((uint64_t)dram_start, PAGE_SIZE);
     }
     logger_trace("DRAM bitmap init success\n");
     return dram_start;
@@ -101,11 +102,9 @@ int shm_init() {
     }
     heap_init(&sbi->heap_allocator, (void *)HEAP_START, HEAP_SIZE);
     spin_lock_init(&sbi->heap_lock);
-
     logger_debug("new base %p, heap_base %p\n", base, (void *)HEAP_START);
 
     btree_module_init(btree_node_alloc, btree_node_free);
-
     sbi->magic = SUPER_BLOCK_MAGIC;
     sbi->root = iget(0);
     inode_unlock(0);

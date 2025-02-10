@@ -1,0 +1,9 @@
+file_system file_bench threads iops
+MadFS fileserver.f 1 5606.928
+MadFS varmail.f 1 7150.383
+MadFS webserver.f 1 60702.015
+MadFS webproxy.f 1 
+SLOTFS fileserver.f 1 75617.640
+SLOTFS varmail.f 1 873469.757
+SLOTFS webserver.f 1 326162.745
+SLOTFS webproxy.f 1 557669.223

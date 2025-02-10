@@ -73,7 +73,7 @@ echo 1 | sudo tee /proc/sys/vm/drop_caches
 case "${fs}" in
 "NOVA")
     cd "$NOVA_PATH" || exit
-    git checkout "$branch"
+    # git checkout "$branch"
     if ((measure_timing == 1)); then
         bash setup.sh "$CONFIGS_PATH"/nova/config.mt.json
     else
@@ -82,17 +82,17 @@ case "${fs}" in
     ;;
 "NOVA-nogc")
     cd "$NOVA_PATH" || exit
-    git checkout "$branch"
+    # git checkout "$branch"
     bash setup.sh "$CONFIGS_PATH"/nova/config.nogc.json
     ;;
 "NOVA-fragment")
     cd "$NOVA_PATH" || exit
-    git checkout "$branch"
+    # git checkout "$branch"
     bash setup.sh "$CONFIGS_PATH"/nova/config.fragment.json
     ;;
 "PMFS")
     cd "$PMFS_PATH" || exit
-    git checkout "$branch"
+    # git checkout "$branch"
     bash setup.sh /dev/pmem0 /mnt/pmem0 -j32 "$measure_timing"
     ;;
 "EXT4-DAX")

@@ -4,13 +4,13 @@ source "../common.sh"
 ABS_PATH=$(where_is_script "$0")
 TOOLS_PATH=$ABS_PATH/../../tools
 
-SIZES=("1G" "2G" "4G" "8G" "16G" "32G" "64G" "128G")
+SIZES=("1" "2" "4" "8" "16" "32" "64" "128")    # in GiB
 FSIZES=("256M" "512M" "1G" "2G" "4G" "8G" "16G" "32G")
 
 PATTERNS=("sw" "rw" "sow" "row")
 
-output_file="performance-table"
-echo > "$output_file"
+TABLE_NAME="$ABS_PATH/performance-table"
+table_create "$TABLE_NAME" "ops size bandwidth(MiB/s) gc_time cow_write_time"
 
 mkdir -p DATA
 dmesg -c
@@ -25,13 +25,13 @@ for pattern in "${PATTERNS[@]}"; do
         echo "$pattern with size: $size"
 
         if [ $pattern == "sw" ]; then
-            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="write" -ioengine=sync -bs="4K" -size=$size -name=test)
+            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="write" -ioengine=sync -bs="4K" -size="$size"G -name=test)
         elif [ $pattern == "rw" ] ; then
-            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="randwrite" -ioengine=sync -bs="4K" -size=$size -name=test)
+            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="randwrite" -ioengine=sync -bs="4K" -size="$size"G -name=test)
         elif [ $pattern == "sow" ]; then
-            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="write" -ioengine=sync -bs="4K" -size=$size -filesize=$fsize -overwrite=1 -name=test)
+            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="write" -ioengine=sync -bs="4K" -size="$size"G -filesize="$fsize" -overwrite=1 -name=test)
         elif [ $pattern == "row" ]; then
-            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="randwrite" -ioengine=sync -bs="4K" -size=$size -filesize=$fsize -overwrite=1 -name=test)
+            fio_output=$(sudo fio -filename="/mnt/pmem0/test" -fallocate=none -direct=0 -iodepth 1 -rw="randwrite" -ioengine=sync -bs="4K" -size="$size"G -filesize="$fsize" -overwrite=1 -name=test)
         fi
 
         dmesg_file="DATA/$pattern/dmesg_output_${size}"
@@ -45,12 +45,13 @@ for pattern in "${PATTERNS[@]}"; do
         fast_gc_time=$(grep -oP 'nova: log_fast_gc: count \d+, timing \K\d+' "$dmesg_file" | head -1)
         thorough_gc_time=$(grep -oP 'nova: log_thorough_gc: count \d+, timing \K\d+' "$dmesg_file" | head -1)
         cow_write_time=$(grep -oP 'nova: do_cow_write: count \d+, timing \K\d+' "$dmesg_file" | head -1)
-        
+
         bandwidth=${bandwidth:-0}
         fast_gc_time=${fast_gc_time:-0}
         thorough_gc_time=${thorough_gc_time:-0}
+        gc_time=$(($fast_gc_time + $thorough_gc_time))
         cow_write_time=${cow_write_time:-0}
         
-        echo "$pattern $size $bandwidth $fast_gc_time $thorough_gc_time $cow_write_time" >> "$output_file"
+        echo "$pattern $size $bandwidth $gc_time $cow_write_time" >> "$TABLE_NAME"
     done
 done

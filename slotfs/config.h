@@ -16,6 +16,7 @@
 #define SUPPORT_CLWB 1
 // #define SLOTFS_DEBUG
 // #define SLOTFS_LOOPFILE
+// #define INPLACE_WRITE
 
 #ifdef SLOTFS_LOOPFILE
 #define DEVICE "/tmp/dax"

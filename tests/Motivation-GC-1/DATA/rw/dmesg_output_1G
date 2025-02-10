@@ -1,159 +1,159 @@
-[657304.702305] nova: Arch new instructions support: CLWB YES
-[657304.702311] nova: Data structure size: inode 120, log_page 4096, file_write_entry 64, dir_entry(max) 304, setattr_entry 56, link_change_entry 40
-[657305.733079] nova: 32 cpus online
-[657305.733085] nova: nova_get_nvmm_info: dev pmem0, phys_addr 0x217c200000, virt_addr 0xffff9a62fc200000, size 266352984064
-[657305.733086] nova: measure timing 1, metadata checksum 0, wprotect 0, disable_gc 0, data checksum 0, data parity 0, DRAM checksum 0, fragment 0, enhance 0
-[657305.735300] nova: Start NOVA snapshot cleaner thread.
-[657305.735302] nova: Enable copy-on-write updates
-[657305.735311] nova: creating an empty nova of size 266352984064
-[657305.739151] nova: Running snapshot cleaner thread
-[657305.764116] nova: NOVA initialization finish
-[657305.764142] nova: Current epoch id: 0
-[657307.506933] nova: Current epoch id: 0
-[657307.506985] nova: nova_save_inode_list_to_log: 32 inode nodes, pi head 0xffd283000, tail 0xffd283200
-[657307.507013] nova: nova_save_blocknode_mappings_to_log: 32 blocknodes, 1 log pages, pi head 0xffd284000, tail 0xffd284200
-[657307.507116] nova: =========== NOVA kernel timing stats ============
-[657307.507117] nova: 
-                ================ Initialization ================
+[  941.070174] nova: Arch new instructions support: CLWB YES
+[  941.070180] nova: Data structure size: inode 120, log_page 4096, file_write_entry 64, dir_entry(max) 304, setattr_entry 56, link_change_entry 40
+[  942.088565] nova: 32 cpus online
+[  942.088569] nova: nova_get_nvmm_info: dev pmem0, phys_addr 0x217c200000, virt_addr 0xffff9c523c200000, size 266352984064
+[  942.088570] nova: measure timing 1, metadata checksum 0, wprotect 0, disable_gc 0, data checksum 0, data parity 0, DRAM checksum 0, fragment 0, enhance 0
+[  942.088718] nova: Start NOVA snapshot cleaner thread.
+[  942.088719] nova: Enable copy-on-write updates
+[  942.088720] nova: Running snapshot cleaner thread
+[  942.088726] nova: creating an empty nova of size 266352984064
+[  942.117947] nova: NOVA initialization finish
+[  942.117958] nova: Current epoch id: 0
+[  943.566922] nova: Current epoch id: 0
+[  943.567000] nova: nova_save_inode_list_to_log: 32 inode nodes, pi head 0x1f3d103000, tail 0x1f3d103200
+[  943.567025] nova: nova_save_blocknode_mappings_to_log: 32 blocknodes, 1 log pages, pi head 0x1f3d104000, tail 0x1f3d104200
+[  943.567084] nova: =========== NOVA kernel timing stats ============
+[  943.567084] nova: 
+               ================ Initialization ================
 
-[657307.507118] nova: init: count 1, timing 61674, average 61674
-[657307.507119] nova: mount: count 1, timing 31065621, average 31065621
-[657307.507119] nova: ioremap: count 0, timing 0, average 0
-[657307.507120] nova: new_init: count 1, timing 28805015, average 28805015
-[657307.507121] nova: recovery: count 0, timing 0, average 0
-[657307.507121] nova: 
-                ============= Directory operations =============
+[  943.567085] nova: init: count 1, timing 47599, average 47599
+[  943.567085] nova: mount: count 1, timing 29395059, average 29395059
+[  943.567086] nova: ioremap: count 0, timing 0, average 0
+[  943.567086] nova: new_init: count 1, timing 29220690, average 29220690
+[  943.567087] nova: recovery: count 0, timing 0, average 0
+[  943.567087] nova: 
+               ============= Directory operations =============
 
-[657307.507122] nova: create: count 1, timing 21976, average 21976
-[657307.507123] nova: lookup: count 1, timing 1001, average 1001
-[657307.507124] nova: link: count 0, timing 0, average 0
-[657307.507124] nova: unlink: count 0, timing 0, average 0
-[657307.507125] nova: symlink: count 0, timing 0, average 0
-[657307.507126] nova: mkdir: count 0, timing 0, average 0
-[657307.507126] nova: rmdir: count 0, timing 0, average 0
-[657307.507127] nova: mknod: count 0, timing 0, average 0
-[657307.507127] nova: rename: count 0, timing 0, average 0
-[657307.507128] nova: readdir: count 0, timing 0, average 0
-[657307.507129] nova: add_dentry: count 1, timing 4084, average 4084
-[657307.507129] nova: remove_dentry: count 0, timing 0, average 0
-[657307.507130] nova: setattr: count 0, timing 0, average 0
-[657307.507130] nova: setsize: count 0, timing 0, average 0
-[657307.507131] nova: 
-                ================ I/O operations ================
+[  943.567087] nova: create: count 1, timing 7780, average 7780
+[  943.567088] nova: lookup: count 1, timing 497, average 497
+[  943.567088] nova: link: count 0, timing 0, average 0
+[  943.567088] nova: unlink: count 0, timing 0, average 0
+[  943.567089] nova: symlink: count 0, timing 0, average 0
+[  943.567089] nova: mkdir: count 0, timing 0, average 0
+[  943.567089] nova: rmdir: count 0, timing 0, average 0
+[  943.567090] nova: mknod: count 0, timing 0, average 0
+[  943.567090] nova: rename: count 0, timing 0, average 0
+[  943.567091] nova: readdir: count 0, timing 0, average 0
+[  943.567091] nova: add_dentry: count 1, timing 3058, average 3058
+[  943.567091] nova: remove_dentry: count 0, timing 0, average 0
+[  943.567092] nova: setattr: count 0, timing 0, average 0
+[  943.567092] nova: setsize: count 0, timing 0, average 0
+[  943.567092] nova: 
+               ================ I/O operations ================
 
-[657307.507132] nova: dax_read: count 0, timing 0, average 0
-[657307.507133] nova: do_cow_write: count 262144, timing 1080084626, average 4120
-[657307.507133] nova: cow_write: count 262144, timing 1102019550, average 4203
-[657307.507134] nova: inplace_write: count 0, timing 0, average 0
-[657307.507135] nova: copy_to_nvmm: count 0, timing 0, average 0
-[657307.507136] nova: dax_get_block: count 0, timing 0, average 0
-[657307.507136] nova: read_iter: count 0, timing 0, average 0
-[657307.507137] nova: write_iter: count 0, timing 0, average 0
-[657307.507138] nova: wrap_iter: count 0, timing 0, average 0
-[657307.507138] nova: 
-                ============== Memory operations ===============
+[  943.567093] nova: dax_read: count 0, timing 0, average 0
+[  943.567093] nova: do_cow_write: count 262144, timing 927484948, average 3538
+[  943.567094] nova: cow_write: count 262144, timing 941804273, average 3592
+[  943.567094] nova: inplace_write: count 0, timing 0, average 0
+[  943.567094] nova: copy_to_nvmm: count 0, timing 0, average 0
+[  943.567095] nova: dax_get_block: count 0, timing 0, average 0
+[  943.567095] nova: read_iter: count 0, timing 0, average 0
+[  943.567095] nova: write_iter: count 0, timing 0, average 0
+[  943.567096] nova: wrap_iter: count 0, timing 0, average 0
+[  943.567096] nova: 
+               ============== Memory operations ===============
 
-[657307.507139] nova: memcpy_read_nvmm: count 0, timing 0, average 0
-[657307.507140] nova: memcpy_write_nvmm: count 262144, timing 214951627, average 819
-[657307.507140] nova: memcpy_write_back_to_nvmm: count 0, timing 0, average 0
-[657307.507141] nova: handle_partial_block: count 0, timing 0, average 0
-[657307.507142] nova: 
-                ============== Memory management ===============
+[  943.567097] nova: memcpy_read_nvmm: count 0, timing 0, average 0
+[  943.567097] nova: memcpy_write_nvmm: count 262144, timing 155961470, average 594
+[  943.567097] nova: memcpy_write_back_to_nvmm: count 0, timing 0, average 0
+[  943.567098] nova: handle_partial_block: count 0, timing 0, average 0
+[  943.567098] nova: 
+               ============== Memory management ===============
 
-[657307.507142] nova: alloc_blocks: count 262236, timing 13952558, average 53
-[657307.507143] nova: new_data_blocks: count 262144, timing 30236070, average 115
-[657307.507144] nova: new_log_blocks: count 92, timing 28677269, average 311709
-[657307.507145] nova: free_blocks: count 0, timing 0, average 0
-[657307.507145] nova: free_data_blocks: count 0, timing 0, average 0
-[657307.507146] nova: free_log_blocks: count 0, timing 0, average 0
-[657307.507147] nova: 
-                ================= Transaction ==================
+[  943.567098] nova: alloc_blocks: count 262236, timing 9034602, average 34
+[  943.567099] nova: new_data_blocks: count 262144, timing 18939964, average 72
+[  943.567099] nova: new_log_blocks: count 92, timing 29097030, average 316272
+[  943.567100] nova: free_blocks: count 0, timing 0, average 0
+[  943.567100] nova: free_data_blocks: count 0, timing 0, average 0
+[  943.567101] nova: free_log_blocks: count 0, timing 0, average 0
+[  943.567101] nova: 
+               ================= Transaction ==================
 
-[657307.507148] nova: transaction_new_inode: count 1, timing 1096, average 1096
-[657307.507148] nova: transaction_link_change: count 0, timing 0, average 0
-[657307.507149] nova: update_tail: count 3, timing 492, average 164
-[657307.507150] nova: 
-                ============= Logging operations ===============
+[  943.567101] nova: transaction_new_inode: count 1, timing 893, average 893
+[  943.567102] nova: transaction_link_change: count 0, timing 0, average 0
+[  943.567102] nova: update_tail: count 3, timing 80, average 26
+[  943.567102] nova: 
+               ============= Logging operations ===============
 
-[657307.507150] nova: append_dir_entry: count 1, timing 1652, average 1652
-[657307.507151] nova: append_file_entry: count 262144, timing 146333532, average 558
-[657307.507152] nova: append_mmap_entry: count 0, timing 0, average 0
-[657307.507152] nova: append_link_change: count 0, timing 0, average 0
-[657307.507153] nova: append_setattr: count 0, timing 0, average 0
-[657307.507154] nova: append_snapshot_info: count 0, timing 0, average 0
-[657307.507155] nova: inplace_update_entry: count 0, timing 0, average 0
-[657307.507155] nova: 
-                =============== Tree operations ================
+[  943.567103] nova: append_dir_entry: count 1, timing 1104, average 1104
+[  943.567103] nova: append_file_entry: count 262144, timing 129821814, average 495
+[  943.567104] nova: append_mmap_entry: count 0, timing 0, average 0
+[  943.567104] nova: append_link_change: count 0, timing 0, average 0
+[  943.567104] nova: append_setattr: count 0, timing 0, average 0
+[  943.567105] nova: append_snapshot_info: count 0, timing 0, average 0
+[  943.567105] nova: inplace_update_entry: count 0, timing 0, average 0
+[  943.567105] nova: 
+               =============== Tree operations ================
 
-[657307.507156] nova: checking_entry: count 0, timing 0, average 0
-[657307.507157] nova: assign_blocks: count 262144, timing 36491446, average 139
-[657307.507157] nova: 
-                ============= Garbage collection ===============
+[  943.567106] nova: checking_entry: count 0, timing 0, average 0
+[  943.567106] nova: assign_blocks: count 262144, timing 22359883, average 85
+[  943.567107] nova: 
+               ============= Garbage collection ===============
 
-[657307.507158] nova: log_fast_gc: count 24, timing 10586375, average 441098
-[657307.507159] nova: log_thorough_gc: count 0, timing 0, average 0
-[657307.507160] nova: check_invalid_log: count 35047, timing 1005452, average 28
-[657307.507160] nova: 
-                ============ Integrity operations ==============
+[  943.567107] nova: log_fast_gc: count 24, timing 10773652, average 448902
+[  943.567108] nova: log_thorough_gc: count 0, timing 0, average 0
+[  943.567108] nova: check_invalid_log: count 35047, timing 658949, average 18
+[  943.567108] nova: 
+               ============ Integrity operations ==============
 
-[657307.507161] nova: block_csum: count 0, timing 0, average 0
-[657307.507162] nova: block_parity: count 0, timing 0, average 0
-[657307.507162] nova: block_csum_parity: count 0, timing 0, average 0
-[657307.507163] nova: protect_memcpy: count 0, timing 0, average 0
-[657307.507164] nova: protect_file_data: count 0, timing 0, average 0
-[657307.507164] nova: verify_entry_csum: count 0, timing 0, average 0
-[657307.507165] nova: verify_data_csum: count 0, timing 0, average 0
-[657307.507166] nova: calc_entry_csum: count 0, timing 0, average 0
-[657307.507166] nova: restore_file_data: count 0, timing 0, average 0
-[657307.507167] nova: reset_mapping: count 0, timing 0, average 0
-[657307.507168] nova: reset_vma: count 0, timing 0, average 0
-[657307.507168] nova: 
-                ================ Miscellaneous =================
+[  943.567109] nova: block_csum: count 0, timing 0, average 0
+[  943.567109] nova: block_parity: count 0, timing 0, average 0
+[  943.567110] nova: block_csum_parity: count 0, timing 0, average 0
+[  943.567110] nova: protect_memcpy: count 0, timing 0, average 0
+[  943.567110] nova: protect_file_data: count 0, timing 0, average 0
+[  943.567111] nova: verify_entry_csum: count 0, timing 0, average 0
+[  943.567111] nova: verify_data_csum: count 0, timing 0, average 0
+[  943.567111] nova: calc_entry_csum: count 0, timing 0, average 0
+[  943.567112] nova: restore_file_data: count 0, timing 0, average 0
+[  943.567112] nova: reset_mapping: count 0, timing 0, average 0
+[  943.567112] nova: reset_vma: count 0, timing 0, average 0
+[  943.567113] nova: 
+               ================ Miscellaneous =================
 
-[657307.507169] nova: find_cache_page: count 0, timing 0, average 0
-[657307.507170] nova: fsync: count 0, timing 0, average 0
-[657307.507170] nova: write_pages: count 0, timing 0, average 0
-[657307.507171] nova: fallocate: count 0, timing 0, average 0
-[657307.507172] nova: direct_IO: count 0, timing 0, average 0
-[657307.507172] nova: free_old_entry: count 0, timing 0, average 0
-[657307.507173] nova: delete_file_tree: count 1, timing 18770845, average 18770845
-[657307.507174] nova: delete_dir_tree: count 1, timing 1104, average 1104
-[657307.507175] nova: new_vfs_inode: count 1, timing 12992, average 12992
-[657307.507176] nova: new_nova_inode: count 1, timing 913, average 913
-[657307.507176] nova: free_inode: count 0, timing 0, average 0
-[657307.507177] nova: free_inode_log: count 0, timing 0, average 0
-[657307.507178] nova: evict_inode: count 2, timing 18773425, average 9386712
-[657307.507178] nova: test_perf: count 0, timing 0, average 0
-[657307.507179] nova: wprotect: count 0, timing 0, average 0
-[657307.507179] nova: 
-                =============== MMap operations ================
+[  943.567113] nova: find_cache_page: count 0, timing 0, average 0
+[  943.567113] nova: fsync: count 0, timing 0, average 0
+[  943.567114] nova: write_pages: count 0, timing 0, average 0
+[  943.567114] nova: fallocate: count 0, timing 0, average 0
+[  943.567114] nova: direct_IO: count 0, timing 0, average 0
+[  943.567115] nova: free_old_entry: count 0, timing 0, average 0
+[  943.567115] nova: delete_file_tree: count 1, timing 10211378, average 10211378
+[  943.567116] nova: delete_dir_tree: count 1, timing 935, average 935
+[  943.567116] nova: new_vfs_inode: count 1, timing 1447, average 1447
+[  943.567116] nova: new_nova_inode: count 1, timing 591, average 591
+[  943.567117] nova: free_inode: count 0, timing 0, average 0
+[  943.567117] nova: free_inode_log: count 0, timing 0, average 0
+[  943.567118] nova: evict_inode: count 2, timing 10213269, average 5106634
+[  943.567118] nova: test_perf: count 0, timing 0, average 0
+[  943.567118] nova: wprotect: count 0, timing 0, average 0
+[  943.567119] nova: 
+               =============== MMap operations ================
 
-[657307.507180] nova: mmap_page_fault: count 0, timing 0, average 0
-[657307.507181] nova: mmap_pmd_fault: count 0, timing 0, average 0
-[657307.507181] nova: mmap_pfn_mkwrite: count 0, timing 0, average 0
-[657307.507182] nova: insert_vma: count 0, timing 0, average 0
-[657307.507183] nova: remove_vma: count 0, timing 0, average 0
-[657307.507184] nova: set_vma_readonly: count 0, timing 0, average 0
-[657307.507184] nova: mmap_cow: count 0, timing 0, average 0
-[657307.507185] nova: udpate_mapping: count 0, timing 0, average 0
-[657307.507186] nova: udpate_pfn: count 0, timing 0, average 0
-[657307.507186] nova: mmap_handler: count 0, timing 0, average 0
-[657307.507187] nova: 
-                =================== Rebuild ====================
+[  943.567119] nova: mmap_page_fault: count 0, timing 0, average 0
+[  943.567119] nova: mmap_pmd_fault: count 0, timing 0, average 0
+[  943.567120] nova: mmap_pfn_mkwrite: count 0, timing 0, average 0
+[  943.567120] nova: insert_vma: count 0, timing 0, average 0
+[  943.567120] nova: remove_vma: count 0, timing 0, average 0
+[  943.567121] nova: set_vma_readonly: count 0, timing 0, average 0
+[  943.567121] nova: mmap_cow: count 0, timing 0, average 0
+[  943.567121] nova: udpate_mapping: count 0, timing 0, average 0
+[  943.567122] nova: udpate_pfn: count 0, timing 0, average 0
+[  943.567122] nova: mmap_handler: count 0, timing 0, average 0
+[  943.567123] nova: 
+               =================== Rebuild ====================
 
-[657307.507187] nova: rebuild_dir: count 1, timing 2273, average 2273
-[657307.507188] nova: rebuild_file: count 0, timing 0, average 0
-[657307.507189] nova: rebuild_snapshot_table: count 0, timing 0, average 0
-[657307.507190] nova: 
-                =================== Snapshot ===================
+[  943.567123] nova: rebuild_dir: count 1, timing 8079, average 8079
+[  943.567123] nova: rebuild_file: count 0, timing 0, average 0
+[  943.567124] nova: rebuild_snapshot_table: count 0, timing 0, average 0
+[  943.567124] nova: 
+               =================== Snapshot ===================
 
-[657307.507190] nova: create_snapshot: count 0, timing 0, average 0
-[657307.507191] nova: init_snapshot_info: count 0, timing 0, average 0
-[657307.507192] nova: delete_snapshot: count 0, timing 0, average 0
-[657307.507192] nova: append_snapshot_filedata: count 0, timing 0, average 0
-[657307.507193] nova: append_snapshot_inode: count 0, timing 0, average 0
-[657307.507193] nova: 
-                =================== Snapshot ===================
+[  943.567124] nova: create_snapshot: count 0, timing 0, average 0
+[  943.567125] nova: init_snapshot_info: count 0, timing 0, average 0
+[  943.567125] nova: delete_snapshot: count 0, timing 0, average 0
+[  943.567126] nova: append_snapshot_filedata: count 0, timing 0, average 0
+[  943.567126] nova: append_snapshot_inode: count 0, timing 0, average 0
+[  943.567126] nova: 
+               =================== Snapshot ===================
 
-[657307.507194] nova: umount: count 1, timing 82537, average 82537
-[657307.507194] nova: 
+[  943.567127] nova: umount: count 1, timing 104932, average 104932
+[  943.567127] nova: 

@@ -91,8 +91,12 @@ int path_lookup(nameidata_t *nd) {
     nd->current = nd->start;
     while(*c == '/')
         c++;
-    if (unlikely(!c)) {
-        assert(0);
+    if (unlikely(!*c)) {
+        if (nd->flags & ND_PARENT) {
+            return 0;
+        }
+        inode_lock(nd->current->i_ino);
+        return 0;
     }
 
     inode_lock(nd->current->i_ino);

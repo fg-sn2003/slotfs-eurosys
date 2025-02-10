@@ -1,0 +1,6 @@
+file_system file_bench threads iops
+SLOTFS fileserver.f 1 
+SLOTFS fileserver.f 2 
+SLOTFS fileserver.f 3 
+SLOTFS fileserver.f 4 
+SLOTFS fileserver.f 5 

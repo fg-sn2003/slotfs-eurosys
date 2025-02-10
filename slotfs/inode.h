@@ -26,6 +26,7 @@ struct pm_inode {
 struct dram_inode {
     ino_t       i_ino;
     size_t      i_size;
+    time_t      i_ctim;
     uid_t       i_uid;
     gid_t       i_gid;
     nlink_t     i_link;
@@ -33,7 +34,6 @@ struct dram_inode {
     
     time_t      i_atim;     
     time_t      i_mtim;     
-    time_t      i_ctim;
     time_t      ts;
 
     atomic_uint ref;

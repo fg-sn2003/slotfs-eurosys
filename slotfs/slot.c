@@ -189,6 +189,11 @@ index_t do_slot_alloc_range(dram_bitmap_t *bitmaps, size_t *count) {
                 range_start + (*count > bit_num - range_start ? bit_num - range_start : *count), range_start);
             
             size_t found_count = range_end - range_start;
+            if (found_count == 0) { //todo: fix this
+                spin_unlock(&bitmap->s_lock);
+                current_bitmap = (current_bitmap + 1) % map_num;
+                continue;
+            }
             debug_assert(found_count <= *count);
             set_bit_range(range_start, bitmap->dram, found_count);
             bitmap->hint = range_end;

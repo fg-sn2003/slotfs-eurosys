@@ -27,7 +27,7 @@ set $dir=dir
 set $nfiles=10000
 set $meandirwidth=20
 set $filesize=16k
-set $nthreads=5
+set $nthreads=1
 set $iosize=1m
 set $meanappendsize=16k
 
