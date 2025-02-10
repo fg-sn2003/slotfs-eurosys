@@ -10,10 +10,10 @@ SLOTFS_DIR=$ABS_PATH/../../slotfs
 MADFS_DIR=$ABS_PATH/../../madfs
 
 FILE_SIZES=($((1 * 1024)))
-FILE_SYSTEMS=("SLOTFS")
-# FILE_SYSTEMS=("SLOTFS" "NOVA" "PMFS" "SplitFS-FIO" "EXT4-DAX")
-# NUM_JOBS=( 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)
-NUM_JOBS=(8 9 10 11 12 13 14 15 16)
+# FILE_SYSTEMS=("SLOTFS")
+FILE_SYSTEMS=("SLOTFS" "NOVA" "PMFS" "SplitFS-FIO" "EXT4-DAX")
+NUM_JOBS=( 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)
+# NUM_JOBS=(8 9 10 11 12 13 14 15 16)
 
 TABLE_NAME="$ABS_PATH/performance-table"
 table_create "$TABLE_NAME" "file_system ops job file_size bandwidth(MiB/s)"
