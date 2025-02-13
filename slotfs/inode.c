@@ -2,7 +2,6 @@
 #define _GNU_SOURCE
 #endif
 #include <sched.h>
-#include <libpmem.h>
 #include "inode.h"
 #include "slot.h"
 #include "slotfs.h"

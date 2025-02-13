@@ -12,9 +12,9 @@
 
 #define SLOTFS_ALL_OPS    (OPEN) (CREAT) (LIBC_OPEN64) (OPEN64) (MKDIR) (CLOSE) (SEEK) \
                         (READ) (WRITE) (PREAD) (PREAD64) (PWRITE) (PWRITE64) \
-                        (STAT) (STAT64) (FSTAT) (FSTAT64) (LSTAT) (LSTAT64) (LSTAT64_TIME64) (FSTATFS) (XSTAT) (XSTAT64) (NEWFSTATAT)\
+                        (STAT) (STAT64) (FSTAT) (FSTAT64) (LSTAT) (FSTATFS) (XSTAT) (XSTAT64) (NEWFSTATAT)\
                         (FOPEN) (FOPEN64) (FPUTS) (FGETS) (FWRITE) (FREAD) (FCLOSE) (FSEEK) \
-                        (OPENAT) (OPENAT64) (ACCESS) (TRUNC) (FTRUNC) (FSYNC) \
+                        (OPENAT) (ACCESS) (TRUNC) (FTRUNC) (FSYNC) \
                         (READ2) (RENAME) (RMDIR) (FDATASYNC) (FCNTL) (FCNTL2) (FFLUSH) \
                         (OPENDIR) (CLOSEDIR) (READDIR) (READDIR64) (ERROR) (SYNC_FILE_RANGE) \
                         (LINK) (UNLINK) (UNLINKAT) (SYMLINK) (SYMLINKAT) \
@@ -113,7 +113,6 @@
 #define ALIAS_FSTAT64 fstat64
 #define ALIAS_LSTAT lstat
 #define ALIAS_LSTAT64 lstat64
-#define ALIAS_LSTAT64_TIME64 __lstat64_time64
 #define ALIAS_NEWFSTATAT newfstatat
 /* Now all the metadata operations */
 #define ALIAS_MKDIR mkdir
@@ -123,7 +122,6 @@
 #define ALIAS_RMDIR rmdir
 /* All the *at operations */
 #define ALIAS_OPENAT openat
-#define ALIAS_OPENAT64 openat64
 #define ALIAS_SYMLINKAT symlinkat
 #define ALIAS_MKDIRAT mkdirat
 #define ALIAS_UNLINKAT  unlinkat
@@ -217,7 +215,6 @@
 #define RETT_FSTAT64 int
 #define RETT_LSTAT int
 #define RETT_LSTAT64 int
-#define RETT_LSTAT64_TIME64 int
 #define RETT_NEWFSTATAT int
 /* Now all the metadata operations */
 #define RETT_MKDIR int
@@ -227,7 +224,6 @@
 #define RETT_RMDIR int
 /* All the *at operations */
 #define RETT_OPENAT int
-#define RETT_OPENAT64 int
 #define RETT_SYMLINKAT int
 #define RETT_MKDIRAT int
 #define RETT_UNLINKAT int
@@ -323,7 +319,6 @@
 #define INTF_FSTAT64 int file, struct stat64 *buf
 #define INTF_LSTAT const char *path, struct stat *buf
 #define INTF_LSTAT64 const char *path, struct stat64 *buf
-#define INTF_LSTAT64_TIME64 const char *path, struct stat64 *buf
 #define INTF_NEWFSTATAT int dirfd, const char *path, struct stat *buf, int flags
 /* Now all the metadata operations */
 #define INTF_MKDIR const char *path, uint32_t mode
@@ -333,7 +328,6 @@
 #define INTF_RMDIR const char *path
 /* All the *at operations */
 #define INTF_OPENAT int dirfd, const char* path, int oflag, ...
-#define INTF_OPENAT64 int dirfd, const char* path, int oflag, ...
 #define INTF_UNLINKAT  int dirfd, const char* path, int flags
 #define INTF_SYMLINKAT const char* old_path, int newdirfd, const char* new_path
 #define INTF_MKDIRAT int dirfd, const char* path, mode_t mode
@@ -347,7 +341,7 @@ BOOST_PP_SEQ_FOR_EACH(TYPE_REL_SYSCALL_WRAP, placeholder, SLOTFS_ALL_OPS)
 
 #define OP_DEFINE(op)		RETT_##op ALIAS_##op(INTF_##op)
 
-#define INSERT_LATENCY     (void)insert_hodor_latency();
+#define INSERT_LATENCY     (void)0;
 
 int pkey = 1;
 void insert_hodor_latency() {

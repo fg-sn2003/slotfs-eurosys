@@ -1,6 +1,9 @@
 file_system file_bench threads iops
-SLOTFS fileserver.f 1 
-SLOTFS fileserver.f 2 
-SLOTFS fileserver.f 3 
-SLOTFS fileserver.f 4 
-SLOTFS fileserver.f 5 
+SplitFS-FILEBENCH varmail.f 8 480378.945
+SplitFS-FILEBENCH varmail.f 9 514337.539
+SplitFS-FILEBENCH webproxy.f 8 0
+SplitFS-FILEBENCH webproxy.f 9 0
+SplitFS-FILEBENCH varmail.f 8 477181.417
+SplitFS-FILEBENCH varmail.f 9 513092.817
+SplitFS-FILEBENCH webserver.f 8 536564.663
+SplitFS-FILEBENCH webserver.f 9 567161.567

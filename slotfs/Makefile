@@ -1,5 +1,5 @@
-CFLAGS=-O3 -fPIC -mclwb -mavx2 -mclflushopt -pthread -Wall -mavx512f -ldl -lrt -lpmem 
-
+CFLAGS=-O3 -fPIC -mclwb -mavx2 -mclflushopt -pthread -Wall -mavx512f 
+LFLAGS=-ldl -lrt
 LIBRARY_NAME = libslot.so
 SOURCES = slotfs.c btree.c shm.c arena.c slot.c slot_vfs.c \
 		inode.c rbtree.c runtime.c slotfs_func.c lock.c debug.c \
@@ -15,7 +15,7 @@ test: slotfs.a
 	cd tests && $(MAKE)
 
 $(LIBRARY_NAME): slotfs.a lib.c ffile.o
-	$(CC) -shared $(CFLAGS) -o build/$@ lib.c build/slotfs.a build/ffile.o
+	$(CC) -shared $(CFLAGS) -o build/$@ lib.c build/slotfs.a build/ffile.o $(LFLAGS)
 
 slotfs.a: $(OBJECTS) build/heap.o build/llist.o
 	ar cr build/slotfs.a $(OBJECTS) build/heap.o build/llist.o
@@ -24,10 +24,7 @@ build/heap.o build/llist.o:
 	cd heap && $(MAKE)
 
 build/%.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-build/%.o: %.S
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(LFLAGS)
 
 ffile.o: glibc/ffile.c
 	cd glibc && $(MAKE)

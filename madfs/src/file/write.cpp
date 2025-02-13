@@ -35,7 +35,7 @@ ssize_t File::write(const char* buf, size_t count) {
     return -1;
   }
   if (unlikely(count == 0)) return 0;
-  
+
   FileState state;
   uint64_t ticket;
   uint64_t offset;
