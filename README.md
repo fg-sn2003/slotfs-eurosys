@@ -48,6 +48,7 @@ All file systems will be automatically compiled by test scripts.
 If you want to compile SlotFS.
 ```shell
 cd slotfs
+mkdir build
 make -j$(nproc)
 cd ..
 ```
