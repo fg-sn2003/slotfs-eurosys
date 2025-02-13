@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-// #include "glibc/ffile.h"
+#include "glibc/ffile.h"
 #include "lib.h"
 #include "shm.h"
 #include "slotfs.h"
@@ -360,9 +360,6 @@ OP_DEFINE(LSTAT64) {
     return lstat(path, (struct stat*)buf);
 }
 
-OP_DEFINE(LSTAT64_TIME64) {
-    return lstat(path, (struct stat*)buf);
-}
 
 /*******************************************************
  * open functions
@@ -484,15 +481,6 @@ OP_DEFINE(OPEN64) {
     mode = va_arg(ap, mode_t);
     
     return open(path, oflag, mode);
-}
-
-OP_DEFINE(OPENAT64) {
-    va_list ap;
-    mode_t mode;
-    va_start(ap, oflag);
-    mode = va_arg(ap, mode_t);
-    
-    return openat(dirfd, path, oflag, mode);
 }
 
 OP_DEFINE(LIBC_OPEN64) {
