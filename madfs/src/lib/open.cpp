@@ -72,7 +72,7 @@ int openat64([[maybe_unused]] int dirfd, const char* pathname, int flags, ...) {
 
 FILE* fopen(const char* filename, const char* mode) {
   FILE* file;
-  printf("fopen: %s\n", filename);
+  // printf("fopen: %s\n", filename);
   file = SAFE_CALL_POSIX_FN(fopen, filename, mode);
   LOG_DEBUG("posix::fopen(%s, %s) = %p", filename, mode, file);
   return file;
