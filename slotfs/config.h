@@ -13,17 +13,18 @@
 #include <limits.h>
 #include <errno.h>
 
-#define SUPPORT_CLWB 1
+#define SLOTFS_LOCAL
 // #define SLOTFS_DEBUG
-// #define SLOTFS_LOOPFILE
 // #define INPLACE_WRITE
 
-#ifdef SLOTFS_LOOPFILE
+#ifdef SLOTFS_LOCAL     // To run on machines without dax
 #define DEVICE "/tmp/dax"
-#define DAX_SIZE    0x100000000                 
+#define DAX_SIZE    (1UL * 1024 * 1024 * 1024)     
+#define SUPPORT_CLWB 0            
 #else
 #define DEVICE "/dev/dax1.0"
-#define DAX_SIZE    (48UL * 1024 * 1024 * 1024)                 
+#define DAX_SIZE    (48UL * 1024 * 1024 * 1024)
+#define SUPPORT_CLWB 1                 
 #endif
 
 #define SLOTFS_SHM_NAME "slotfs_shm"

@@ -5,9 +5,11 @@ SOURCES = slotfs.c btree.c shm.c arena.c slot.c slot_vfs.c \
 		inode.c rbtree.c runtime.c slotfs_func.c lock.c debug.c \
 		journal.c mkfs.c recover.c gather.c
 OBJECTS = $(addprefix build/, $(notdir $(SOURCES:.c=.o)))
-OBJECTS := $(OBJECTS:.S=.o)
+DEPFILES = $(addprefix build/, $(notdir $(SOURCES:.c=.d)))
 
-.PHONY: all clean test 
+$(shell mkdir -p build)
+
+.PHONY: all clean test heap
 
 all: $(LIBRARY_NAME) ffile.o  test
 
@@ -17,14 +19,17 @@ test: slotfs.a
 $(LIBRARY_NAME): slotfs.a lib.c ffile.o
 	$(CC) -shared $(CFLAGS) -o build/$@ lib.c build/slotfs.a build/ffile.o $(LFLAGS)
 
-slotfs.a: $(OBJECTS) build/heap.o build/llist.o
+slotfs.a: $(OBJECTS) heap
 	ar cr build/slotfs.a $(OBJECTS) build/heap.o build/llist.o
 
-build/heap.o build/llist.o: 
+heap: 
 	cd heap && $(MAKE)
 
 build/%.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(LFLAGS)
+	$(CC) -MM $(CFLAGS) $< > build/$*.d
+
+-include $(DEPFILES)
 
 ffile.o: glibc/ffile.c
 	cd glibc && $(MAKE)

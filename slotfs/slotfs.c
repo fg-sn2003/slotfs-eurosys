@@ -22,11 +22,10 @@ int dax_map(char *dax) {
         return -1;
     }
 
-#ifdef SLOTFS_LOOPFILE
+#ifdef SLOTFS_LOCAL
     if ((dax_base = mmap((void *)DAX_START, DAX_SIZE, PROT_READ | PROT_WRITE, 
         MAP_SHARED, fd, 0)) == MAP_FAILED) {
         perror("mmap dax");
-        assert(0);
         return -1;
     }
 #else
@@ -34,13 +33,13 @@ int dax_map(char *dax) {
     if ((dax_base = mmap((void *)DAX_START, size, PROT_READ | PROT_WRITE, 
         MAP_SHARED | MAP_SYNC | MAP_POPULATE, fd, 0)) != (void *)DAX_START) {
         perror("mmap dax");
-        assert(0);
         return -1;
     }
 #endif
-    logger_info("Dax map %s to %p\n", dax, dax_base);
-
     close(fd);
+    
+    logger_info("Map device %s to %p\n", dax, dax_base);
+
     return 0;
 }
 
@@ -126,7 +125,7 @@ int slotfs_init() {
 
     ret = dax_map(DEVICE);
     assert(ret == 0);
-
+    
     ret = shm_map(SLOTFS_SHM_NAME);
     assert(ret == 0);
     
