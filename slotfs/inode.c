@@ -125,7 +125,6 @@ filent_t* filent_lookup(inode_t *file, index_t idx) {
 
 dirent_t* dir_append_entry(inode_t *dir, inode_t* inode, const char* name, int name_len) {
     dirent_t *d;
-    int ret;
 
     d = dirent_alloc();
     if (unlikely(!d)) return ERR_PTR(-ENOMEM);
@@ -143,8 +142,8 @@ dirent_t* dir_append_entry(inode_t *dir, inode_t* inode, const char* name, int n
     d->ts   = inode->ts;
     d->hash = BKDRHash(name, name_len);
     d->idx  = dno;
-    ret = dir_index_insert(dir, d);
-    debug_assert(!ret);
+    
+    dir_index_insert(dir, d);
     
     pm_dirent_t *pd = (pm_dirent_t *)REL2ABS(IDX2DENT(dno));
     pd->ino      = inode->i_ino;
@@ -326,6 +325,7 @@ int dir_index_insert(inode_t *dir, dirent_t *d) {
             temp = &((*temp)->rb_right);
         } else {
             ret = -EEXIST;
+            debug_assert(ret);
             return ret;
         }
     }
@@ -337,13 +337,14 @@ int dir_index_insert(inode_t *dir, dirent_t *d) {
 }
 
 int file_index_insert(inode_t *file, filent_t *fe) {
-    static unsigned long total_time = 0;
     btree_t *tree = &file->b_root;
     filent_ctx_t fctx = { .inode = file};
+
     int ret = btree_set_range_callback(tree, fe->l_idx, 
         fe->l_idx + fe->blocks, fe, filent_insert_callback, &fctx);
     // int ret =  btree_set_range_hint_callbak(tree, fe->l_idx, 
     //     fe->l_idx + fe->blocks, fe, &file->b_hint, filent_insert_callback, &fctx);
+    debug_assert(ret == 0);
 
     return ret;
 }
@@ -440,11 +441,10 @@ filent_t *filent_dispatch(inode_t *inode, size_t size) {
 
 filent_t* file_append_entry(inode_t *inode, pm_filent_t* entry) {
     filent_t *fe;
-    int ret;
-    int reuse = 0;
     index_t reuse_next;
     index_t fno;
-
+    int reuse = 0;
+    
     fe = filent_dispatch(inode, entry->blocks << PAGE_SHIFT);
     if (fe) {
         reuse = 1;
@@ -483,8 +483,7 @@ filent_t* file_append_entry(inode_t *inode, pm_filent_t* entry) {
     if (!reuse)
         list_add_tail(&fe->list, &inode->list);
 
-    ret = file_index_insert(inode, fe);
-    debug_assert(!ret);
+    file_index_insert(inode, fe);
     
     pm_filent_t *pf = (pm_filent_t *)REL2ABS(IDX2FENT(fno));
     
@@ -601,7 +600,7 @@ ssize_t inode_write_inplace(inode_t *inode, const void *buf, size_t len, off_t o
         
         // inplace write
         if (fe) {
-            bytes = (fe->blocks + fe->l_idx - start_blk) << PAGE_SHIFT - page_offset;
+            bytes = ((fe->blocks + fe->l_idx - start_blk) << PAGE_SHIFT) - page_offset;
             if (bytes > count) 
                 bytes = count;
             
@@ -860,14 +859,13 @@ int inode_extend(inode_t *inode, size_t new_size) {
     unsigned long start_blk, num_blk, _start_blk, _end_blk;
     size_t page_offset;
     int ret;
-    void *pmem;
 
     // printf("inode_extend: inode %lu, new_size %lu\n", inode->i_ino, new_size);
     page_offset = inode->i_size & PAGE_MASK;
     start_blk = (inode->i_size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+    num_blk = (new_size - inode->i_size + PAGE_SIZE - 1) / PAGE_SIZE;
     _start_blk = start_blk;
     _end_blk = start_blk + num_blk - 1;
-    num_blk = (new_size - inode->i_size + PAGE_SIZE - 1) / PAGE_SIZE;
 
     inode_lock(inode->i_ino);
     // range_lock(&inode->r_lock, _start_blk, _end_blk);
@@ -876,8 +874,9 @@ int inode_extend(inode_t *inode, size_t new_size) {
         fe = filent_lookup(inode, start_blk);
         debug_assert(fe);
 
-        pmem = (void *)REL2ABS(IDX2DATA(fe->p_idx + (start_blk - fe->l_idx)));
 #if 0
+        void* pmem;
+        pmem = (void *)REL2ABS(IDX2DATA(fe->p_idx + (start_blk - fe->l_idx)));
         memset_nt(pmem + page_offset, 0, PAGE_SIZE - page_offset);
 #endif
         start_blk++;
@@ -893,8 +892,9 @@ int inode_extend(inode_t *inode, size_t new_size) {
             return -ENOSPC;
         }
         
-        pmem = (void *)REL2ABS(IDX2DATA(nr));
 #if 0
+        void* pmem;
+        pmem = (void *)REL2ABS(IDX2DATA(nr));
         memset_nt(pmem, 0, PAGE_SIZE);
 #endif
         ebuf_add(ebuf, start_blk, nr, allocated);

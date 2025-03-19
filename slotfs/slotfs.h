@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <immintrin.h>
 #include <assert.h>
+#include <stdatomic.h>
 #include <errno.h>
 #include "config.h"
 #include "slot.h"
@@ -17,7 +18,6 @@ extern void memcpy_nt(char *dest, const char *src, int n);
 
 int slotfs_init();
 void slotfs_exit();
-int dax_map(char *dax);
 enum {
     SLOT_INODE = 0,
     SLOT_DIR,
@@ -43,29 +43,29 @@ typedef struct pm_slot {
 } pm_slot_t;
 
 typedef struct pm_super_block {
-    uint64_t    magic;
-    time_t      mtime;  // last mount time
-    time_t      ctime;  // create time
-    uint64_t    size;
+	uint64_t    magic;
+	time_t      mtime;  // last mount time
+	time_t      ctime;  // create time
+	uint64_t    size;
 	uint64_t    ts;
-    
-    pm_slot_t   slots[SLOT_TYPE_NUM];
+	
+	pm_slot_t   slots[SLOT_TYPE_NUM];
 
-    /* consistency */
-    bool         umount;
-    uint32_t     csm;
+	/* consistency */
+	bool         umount;
+	uint32_t     csm;
 } pm_sb_t;
 
-typedef struct dram_super_block {
-    uint64_t    magic;
-	int 		status;
-	int			user;
-    int         cpus;
-    char        device[MAX_STR_LEN];
-    char        mountpoint[MAX_STR_LEN];
-    uint64_t    device_size;  
+typedef struct dram_sb {
+	atomic_uint_least64_t    magic;
+	atomic_int 	status;
+	atomic_int	instance;
+	int         cpus;
+	char        device[MAX_STR_LEN];
+	char        mountpoint[MAX_STR_LEN];
+	uint64_t    device_size;  
 	
-    pm_sb_t*    super;      // in-dram copy of pm super block
+	pm_sb_t*    super;      // in-dram copy of pm super block
 	inode_t*    root;
 	int			initing;
 	uint64_t 	ts;
@@ -83,7 +83,9 @@ typedef struct dram_super_block {
 	pthread_t 		gather_thread;
 	spinlock_t		release_lock;
 	inode_table_t   inode_table;
-    dram_bitmap_t *maps[SLOT_TYPE_NUM];
+
+	spinlock_t 		sb_lock;
+	dram_bitmap_t *maps[SLOT_TYPE_NUM];
 } dram_sb_t;
 
 extern dram_sb_t *sbi;

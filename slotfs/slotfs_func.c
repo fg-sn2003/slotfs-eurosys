@@ -548,7 +548,34 @@ void* slotfs_mmap(void *addr, size_t len, int prot, int flags, int file, off_t o
     return base ? base : curr_map;
 }
 
-int slotfs_stat(int fd, const char *path, struct stat *buf, int flags) {
+static void slotfs_fill_stat(inode_t *inode, struct stat *buf) {
+    buf->st_ino = inode->i_ino;
+    buf->st_mode = inode->i_mode;
+    buf->st_nlink = inode->i_link;
+    buf->st_uid = inode->i_uid;
+    buf->st_gid = inode->i_gid;
+    buf->st_size = inode->i_size;
+    buf->st_atime = inode->i_atim;
+    buf->st_mtime = inode->i_mtim;
+    buf->st_ctime = inode->i_ctim;
+    buf->st_blksize = PAGE_SIZE;
+}
+
+static void slotfs_fill_stat64(inode_t *inode, struct stat64 *buf) {
+    buf->st_ino = inode->i_ino;
+    buf->st_mode = inode->i_mode;
+    buf->st_nlink = inode->i_link;
+    buf->st_uid = inode->i_uid;
+    buf->st_gid = inode->i_gid;
+    buf->st_size = inode->i_size;
+    buf->st_atime = inode->i_atim;
+    buf->st_mtime = inode->i_mtim;
+    buf->st_ctime = inode->i_ctim;
+    buf->st_blksize = PAGE_SIZE;
+}
+
+
+int slotfs_stat(int fd, const char *path, void *buf, int flags, int stat64) {
     nameidata_t nd;
     inode_t *inode;
     int ret;
@@ -571,16 +598,11 @@ int slotfs_stat(int fd, const char *path, struct stat *buf, int flags) {
         }
     }
     
-    buf->st_ino = inode->i_ino;
-    buf->st_mode = inode->i_mode;
-    buf->st_nlink = inode->i_link;
-    buf->st_uid = inode->i_uid;
-    buf->st_gid = inode->i_gid;
-    buf->st_size = inode->i_size;
-    buf->st_atime = inode->i_atim;
-    buf->st_mtime = inode->i_mtim;
-    buf->st_ctime = inode->i_ctim;
-    buf->st_blksize = PAGE_SIZE;
+    if (stat64) {
+        slotfs_fill_stat64(inode, (struct stat64*)buf);
+    } else {
+        slotfs_fill_stat(inode, (struct stat*)buf);
+    }
     
     inode_unlock(inode->i_ino);
 
@@ -588,7 +610,7 @@ int slotfs_stat(int fd, const char *path, struct stat *buf, int flags) {
 }
 
 int slotfs_xstat(int fd, const char *path, int flags, 
-    unsigned int mask, struct statx *statxbuf) 
+    unsigned int mask, void *buf, int stat64) 
 {
     nameidata_t nd;
     inode_t *inode;
@@ -611,15 +633,21 @@ int slotfs_xstat(int fd, const char *path, int flags,
         }
     }
 
-    statxbuf->stx_ino = inode->i_ino;
-    statxbuf->stx_mode = inode->i_mode;
-    statxbuf->stx_nlink = inode->i_link;
-    statxbuf->stx_uid = inode->i_uid;
-    statxbuf->stx_gid = inode->i_gid;
-    statxbuf->stx_size = inode->i_size;
-    statxbuf->stx_blocks = (inode->i_size + PAGE_SIZE - 1) / PAGE_SIZE;
-    statxbuf->stx_mask = (STATX_TYPE | STATX_MODE | STATX_NLINK |
-        STATX_UID | STATX_GID | STATX_INO | STATX_SIZE) & mask;
+    // statxbuf->stx_ino = inode->i_ino;
+    // statxbuf->stx_mode = inode->i_mode;
+    // statxbuf->stx_nlink = inode->i_link;
+    // statxbuf->stx_uid = inode->i_uid;
+    // statxbuf->stx_gid = inode->i_gid;
+    // statxbuf->stx_size = inode->i_size;
+    // statxbuf->stx_blocks = (inode->i_size + PAGE_SIZE - 1) / PAGE_SIZE;
+    // statxbuf->stx_mask = (STATX_TYPE | STATX_MODE | STATX_NLINK |
+    //     STATX_UID | STATX_GID | STATX_INO | STATX_SIZE) & mask;
+
+    if (stat64) {
+        slotfs_fill_stat64(inode, (struct stat64*)buf);
+    } else {
+        slotfs_fill_stat(inode, (struct stat*)buf);
+    }
     
     inode_unlock(inode->i_ino);
     return 0;

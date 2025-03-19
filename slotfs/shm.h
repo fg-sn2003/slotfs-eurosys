@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-int shm_map(char *path);
-void* global_shm_malloc(size_t size);
-void global_shm_free(void* ptr);
+int shm_init();
 
 #endif // SHM_H

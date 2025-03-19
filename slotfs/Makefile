@@ -1,4 +1,4 @@
-CFLAGS=-O3 -fPIC -mclwb -mavx2 -mclflushopt -pthread -Wall -mavx512f 
+CFLAGS=-O3 -fPIC -mclwb -mavx2 -mclflushopt -pthread -mavx512f -Wall -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized
 LFLAGS=-ldl -lrt
 LIBRARY_NAME = libslot.so
 SOURCES = slotfs.c btree.c shm.c arena.c slot.c slot_vfs.c \

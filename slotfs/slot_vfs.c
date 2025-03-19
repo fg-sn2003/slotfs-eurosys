@@ -9,7 +9,6 @@ inode_t *iget(unsigned long ino) {
     inode_lock(ino);
     if (sbi->inode_table[ino].inode) {
         inode = sbi->inode_table[ino].inode;
-        // logger_trace("iget: ino %lu from cache\n", ino);
         return inode;
     } 
     

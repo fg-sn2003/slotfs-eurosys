@@ -12,21 +12,20 @@
 
 dram_sb_t* sbi;
 
-int dax_map(char *dax) {
-    struct stat st;
+void dax_map(char *dax) {
     int fd;
     void *dax_base;
 
     if ((fd = open(dax, O_RDWR, 0)) < 0) {
         perror("open dax");
-        return -1;
+        assert(0);
     }
 
 #ifdef SLOTFS_LOCAL
     if ((dax_base = mmap((void *)DAX_START, DAX_SIZE, PROT_READ | PROT_WRITE, 
         MAP_SHARED, fd, 0)) == MAP_FAILED) {
         perror("mmap dax");
-        return -1;
+        assert(0);
     }
 #else
     unsigned long size = dax_size_safe(dax);
@@ -40,13 +39,47 @@ int dax_map(char *dax) {
     
     logger_info("Map device %s to %p\n", dax, dax_base);
 
-    return 0;
+}
+
+void shm_map(char *shm, int *first_instance) {
+    void *base;
+    int fd;
+
+    fd = shm_open(SLOTFS_SHM_NAME, O_RDWR, 0666);
+    if (fd == -1) {
+        fd = shm_open(SLOTFS_SHM_NAME, O_CREAT | O_EXCL | O_RDWR, 0666);
+        if (fd != -1) {
+            *first_instance = 1;
+        } else if (errno == EEXIST) {   
+            //race condition: another process create the shm
+            fd = shm_open(SLOTFS_SHM_NAME, O_RDWR, 0666);
+            if (fd == -1) {
+                perror("shm_open");
+                assert(0);
+            }
+        } else {
+            perror("shm_open");
+            assert(0);
+        }
+    }
+
+    if (ftruncate(fd, SHM_SIZE) == -1) {
+        perror("ftruncate");
+        assert(0);
+    }
+
+    base = mmap((void *)SHM_BASE, SHM_SIZE, PROT_READ | PROT_WRITE, 
+        MAP_SHARED | MAP_POPULATE, fd, 0);
+    if (base != (void *)SHM_BASE) {
+        logger_fail("shm base address error: %p\n", base);
+        assert(0);
+    }
 }
 
 void slotfs_exit() {
-    sbi->user--;
     runtime_exit();
-    if (sbi->user > 0)
+    
+    if (atomic_fetch_sub(&sbi->instance, 1) > 1)
         return;
         
     char *crash_env = getenv("SLOTFS_CRASH");
@@ -60,37 +93,53 @@ void slotfs_exit() {
         flush_byte(&pm->umount);
     }
 
-    if (sbi->user == 0) {
+    if (atomic_load(&sbi->instance) == 0) {
         sbi->status = STATUS_EXIT;
         pthread_join(sbi->release_thread, NULL);
     }
 }
 
-int need_mkfs() {
-#if 1
-    return 1;
+static int needs_mkfs() {
+    char *env = getenv("SLOTFS_MKFS");
+
+    if (env == NULL || atoi(env) != 1) {
+        return false;
+    }
+
+#if 0
+    printf("SLOTFS_MKFS is set. Do you want to proceed with mkfs? [Y/N]: ");
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);  
+    ch = getchar();
+
+    return (ch == 'Y' || ch == 'y');
+#else
+    return true;
 #endif
-    if (sbi->status != STATUS_UNINIT) {
-        return 0;
-    }
-
-    char *mkfs_env = getenv("SLOTFS_MKFS");
-    int mkfs = 0;
-
-    if (mkfs_env != NULL) {
-        mkfs = atoi(mkfs_env);
-        setenv("SLOTFS_MKFS", "0", 1);
-    }
-
-    return mkfs;
 }
 
-int need_recovery() {
-    if (sbi->status != STATUS_UNINIT) {
-        return 0;
-    }
+int needs_recover() {
     pm_sb_t *pm = (pm_sb_t *)DAX_START;
-    return !pm->umount;
+    
+    if (pm->umount == 1) {
+        return false;
+    }
+
+#if 0
+    printf("Detected an unclean shutdown. Do you want to proceed with recovery? [Y/N]: ");
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);  
+    ch = getchar();
+
+    if (ch == 'Y' || ch == 'y') {
+        return true;
+    } else {
+        perror("corrupted file system");
+        assert(0);
+    }
+#else
+    return true;
+#endif
 }
 
 void release_thread() {
@@ -113,62 +162,82 @@ void release_thread() {
     }   
 }
 
-int init_dramon() {
+int deamon_init() {
     pthread_create(&sbi->release_thread, NULL, (void *)release_thread, NULL);
     // pthread_create(&sbi->gather_thread, NULL, (void *)gather_thread, NULL);
     return 0;
 }
 
 int slotfs_init() {
-    int ret;
     int recovered = 0;
+    int first_instance = 0;
+    int ret;
 
-    ret = dax_map(DEVICE);
-    assert(ret == 0);
+    dax_map(DEVICE);
     
-    ret = shm_map(SLOTFS_SHM_NAME);
-    assert(ret == 0);
-    
-    if (need_mkfs()) {
-        ret = mkfs(DEVICE);
-        assert(ret == 0);
-    }
+    shm_map(SLOTFS_SHM_NAME, &first_instance);
 
-    if (need_recovery()) {
-        recovered = 1;
-        ret = recover();
-        assert(ret == 0);
-    }
+    sbi = (dram_sb_t *)SHM_BASE;
+    if (first_instance) {
+        logger_info("%d: first instance\n", getpid());
 
-    while (sbi->status == STATUS_INITING) {
-        sleep(1);
-    }
+        printf("%p\n", sbi);
+        memset(sbi, 0, sizeof(dram_sb_t));
+        
+        atomic_store(&sbi->magic, SUPER_BLOCK_MAGIC);
+        __sync_synchronize();
+        
+        atomic_store(&sbi->status, STATUS_INITING);
+        __sync_synchronize();
+        
+        if (needs_mkfs()) {
+            ret = slotfs_mkfs(DEVICE);
+            assert(ret == 0);
+        }
+        
+        if (needs_recover()) {
+            ret = slotfs_recover();
+            recovered = 1;
+            assert(ret == 0);
+        }
 
-    if (sbi->status == STATUS_UNINIT) {
-        sbi->status = STATUS_INITING;
-        ret = shm_init(SLOTFS_SHM_NAME);
+        ret = shm_init();
         assert(ret == 0);
-        ret = init_dramon();
+
+        ret = deamon_init();   
         assert(ret == 0);
+
+        atomic_store(&sbi->instance, 0);
+        sbi->cpus = sysconf(_SC_NPROCESSORS_ONLN);
+
+        pm_sb_t *pm = (pm_sb_t *)DAX_START;
+        pm->umount = 0;
+        flush_byte(&pm->umount);
 
         if (recovered) {
             ret = journal_replay();
             assert(ret == 0);
         }
-        runtime_init();
-        btree_module_init(btree_node_alloc, btree_node_free);
-        sbi->status = STATUS_READY;   
+        
+        __sync_synchronize();
+        atomic_store(&sbi->status, STATUS_READY);
     } else {
-        runtime_init();
-        btree_module_init(btree_node_alloc, btree_node_free);
+        logger_info("%d: not first instance\n", getpid());        
+        do {
+            __sync_synchronize();
+        } while (atomic_load(&sbi->magic) != SUPER_BLOCK_MAGIC);
+        
+        while (atomic_load(&sbi->status) != STATUS_READY) {
+            sleep(1);
+        }
+        __sync_synchronize();
     }
 
-    sbi->user++;
-    pm_sb_t *pm = (pm_sb_t *)DAX_START;
-    pm->umount = 0;
-    flush_byte(&pm->umount);
+    runtime_init();
+
+    btree_module_init(btree_node_alloc, btree_node_free);
+
+    atomic_fetch_add(&sbi->instance, 1);
+
     return 0;
-error:
-    logger_fail("slotfs init error: %d\n", ret);
-    return ret;
 }

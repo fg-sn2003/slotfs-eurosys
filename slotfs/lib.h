@@ -12,7 +12,7 @@
 
 #define SLOTFS_ALL_OPS    (OPEN) (CREAT) (LIBC_OPEN64) (OPEN64) (MKDIR) (CLOSE) (SEEK) \
                         (READ) (WRITE) (PREAD) (PREAD64) (PWRITE) (PWRITE64) \
-                        (STAT) (STAT64) (FSTAT) (FSTAT64) (LSTAT) (FSTATFS) (XSTAT) (XSTAT64) (NEWFSTATAT)\
+                        (STAT) (STAT64) (FSTAT) (FSTAT64) (LSTAT) (LSTAT64) (FSTATFS) (XSTAT) (XSTAT64) (NEWFSTATAT)\
                         (FOPEN) (FOPEN64) (FPUTS) (FGETS) (FWRITE) (FREAD) (FCLOSE) (FSEEK) \
                         (OPENAT) (ACCESS) (TRUNC) (FTRUNC) (FSYNC) \
                         (READ2) (RENAME) (RMDIR) (FDATASYNC) (FCNTL) (FCNTL2) (FFLUSH) \
@@ -358,6 +358,6 @@ void insert_hodor_latency() {
 }
 
 void insert_syscall_latency() {
-    volatile int pid = getpid(); 
+    getpid(); 
 }
 #endif // __WRAPPER_H

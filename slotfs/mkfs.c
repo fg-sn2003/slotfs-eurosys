@@ -101,7 +101,7 @@ int mkfs_rootinode(pm_sb_t *sb) {
     return 0;
 }
 
-int mkfs(char* path) {
+int slotfs_mkfs(char* path) {
     pm_sb_t sb;
     struct stat st;
 

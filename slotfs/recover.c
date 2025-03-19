@@ -203,8 +203,6 @@ static int rc_handle_filent(rc_inode_t *inode, index_t idx, index_t *next) {
     if (*next == 0)  // ghost slot
         return 0;
     
-    // __builtin_prefetch(next, 0, 3);
-    volatile char temp = *(char *)next;
     void **ptr;
     rc_filent_t *old_filent;
 
@@ -274,7 +272,6 @@ int rc_handle_inode(index_t ino) {
         idx = next;
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
-    printf("inode %d, entry_num %d, time %ld\n", ino, inode->entry_num, (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec));
     return 0;
 }
 
@@ -299,7 +296,7 @@ static void* rc_replay(void *data) {
     }
 }
 
-int recover() {
+int slotfs_recover() {
     int ret;
     btree_module_init_default();
     ret = rc_init();

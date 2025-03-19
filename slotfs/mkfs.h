@@ -1,1 +1,1 @@
-int mkfs(char* path);
+int slotfs_mkfs(char* path);

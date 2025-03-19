@@ -45,4 +45,4 @@ typedef struct recover_manager {
     atomic_uint_fast16_t  active_thread;
 } rc_mgr_t;
 
-int recover();
+int slotfs_recover();

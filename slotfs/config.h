@@ -14,7 +14,7 @@
 #include <errno.h>
 
 #define SLOTFS_LOCAL
-// #define SLOTFS_DEBUG
+#define SLOTFS_DEBUG
 // #define INPLACE_WRITE
 
 #ifdef SLOTFS_LOCAL     // To run on machines without dax
@@ -44,7 +44,7 @@
 #define DBGMASK_FAIL           	(0x00000020)
 #define DBGMASK_TEMP           	(0x00000040)
 #define DBGMASK_SYSCALL         (0x00000080)
-#define DBGMASK DBGMASK_NONE
+#define DBGMASK DBGMASK_ALL
 // #define DBGMASK (DBGMASK_NONE)
 
 #define MAX_STR_LEN     128     // < 4096 bytes
@@ -56,13 +56,24 @@
 /* shm layout */
 // TODO: 
 #define SHM_BASE    0x700000000000
+#define DAX_START   0x780000000000
+
+#if defined(SLOTFS_LOCAL)
+#define SHM_SIZE    (128UL * 1024 * 1024)					
+#define HEAP_SIZE   (16UL * 1024 * 1024)
+#define HEAP_START  (SHM_BASE + SHM_SIZE - HEAP_SIZE)
+#define BNODE_ARENA (16UL * 1024 * 1024)
+#define INODE_ARENA (16UL * 1024 * 1024)
+#define ENTRY_ARENA (64UL * 1024 * 1024)
+#else
 #define SHM_SIZE    (2UL * 1024 * 1024 * 1024)					
 #define HEAP_SIZE   (20UL * 1024 * 1024)
 #define HEAP_START  (SHM_BASE + SHM_SIZE - HEAP_SIZE)
 #define BNODE_ARENA (256UL * 1024 * 1024)
 #define INODE_ARENA (256UL * 1024 * 1024)
 #define ENTRY_ARENA (1024UL * 1024 * 1024)
-#define DAX_START   0x780000000000
+#endif
+
 
 /* pm layout*/
 #define INODE_SLOT_SIZE     128

@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM 
+ColumnLimit: 80       
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: false
+IndentWidth: 4
