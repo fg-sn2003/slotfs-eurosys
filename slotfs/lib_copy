@@ -10,7 +10,6 @@
 #include <dlfcn.h>
 #include <stdarg.h>
 #include <string.h>
-#include <sys/syscall.h>
 
 static struct real_ops {
     #define DEC_REL_SYSCALL(op) 	real_##op##_t op;
@@ -18,11 +17,12 @@ static struct real_ops {
     BOOST_PP_SEQ_FOR_EACH(DEC_REL_SYSCALL_WRAP, placeholder, SLOTFS_ALL_OPS)
 } real_ops;
 
-void safe_print(const char *msg) {
-    syscall(SYS_write, 2, msg, strlen(msg));
+void insert_real_op() {
+    printf("insert real op\n");
+    #define FILL_REL_SYSCALL(op) 	real_ops.op = dlsym(RTLD_NEXT, MK_STR3(ALIAS_##op));
+    #define FILL_REL_SYSCALL_WRAP(r, data, elem) 	FILL_REL_SYSCALL(elem)
+    BOOST_PP_SEQ_FOR_EACH(FILL_REL_SYSCALL_WRAP, placeholder, SLOTFS_ALL_OPS)
 }
-
-void insert_real_op();
 
 
 /*******************************************************
@@ -90,26 +90,25 @@ OP_DEFINE(FTRUNC64) {
     return ftruncate(file, length);
 }
 
-OP_DEFINE(MMAP) {
-    INSERT_LATENCY
+// OP_DEFINE(MMAP) {
+//     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
-        insert_real_op();
+//     if (unlikely(real_ops.ERROR == NULL)) 
+//         insert_real_op();
     
+//     syscall_trace("MMAP: %p, %ld, %d, %d, %d, %ld\n", addr, len, prot, flags,
+//                   file, off);
 
-    syscall_trace("MMAP: %p, %ld, %d, %d, %d, %ld\n", addr, len, prot, flags,
-                  file, off);
+//     if (file >= FD_OFFSET && file < (FD_MAX + FD_OFFSET)) {
+//         return slotfs_mmap(addr, len, prot, flags, file - FD_OFFSET, off);
+//     }
 
-    if (file >= FD_OFFSET && file < (FD_MAX + FD_OFFSET)) {
-        return slotfs_mmap(addr, len, prot, flags, file - FD_OFFSET, off);
-    }
+//     return real_ops.MMAP(addr, len, prot, flags, file, off);
+// }
 
-    return real_ops.MMAP(addr, len, prot, flags, file, off);
-}
-
-OP_DEFINE(MMAP64) {
-    return mmap(addr, len, prot, flags, file, off);
-}
+// OP_DEFINE(MMAP64) {
+//     return mmap(addr, len, prot, flags, file, off);
+// }
 
 /*******************************************************
  * sync functions
@@ -467,56 +466,6 @@ OP_DEFINE(LSTAT64) {
     }
 
     return real_ops.LSTAT64(path, buf);
-}
-
-OP_DEFINE(LXSTAT) {
-    INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
-        insert_real_op();
-
-    syscall_trace("LXSTAT: %d, %s\n", val, path);
-
-    if (*path == '\\' || *path != '/') {
-        const char *p = path;
-
-        while (*p == '\\')
-            p++;
-
-        int ret = slotfs_xstat(AT_FDCWD, p, val, AT_SYMLINK_NOFOLLOW, buf, 0);
-        if (ret < 0 && *path != '\\') {
-            return real_ops.LXSTAT(val, path, buf);
-        }
-
-        return ret;
-    }
-
-    return real_ops.LXSTAT(val, path, buf);
-}
-
-OP_DEFINE(LXSTAT64) {
-    INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
-        insert_real_op();
-
-    syscall_trace("LXSTAT64: %d, %s\n", val, path);
-
-    if (*path == '\\' || *path != '/') {
-        const char *p = path;
-
-        while (*p == '\\')
-            p++;
-
-        int ret = slotfs_xstat(AT_FDCWD, p, val, AT_SYMLINK_NOFOLLOW, buf, 1);
-        if (ret < 0 && *path != '\\') {
-            return real_ops.LXSTAT64(val, path, buf);
-        }
-
-        return ret;
-    }
-
-    return real_ops.LXSTAT64(val, path, buf);
 }
 
 /*******************************************************
@@ -968,7 +917,6 @@ OP_DEFINE(FFLUSH) {
     return real_ops.FFLUSH(fp);
 }
 
-static int initialized = 0;
 static int err;
 OP_DEFINE(ERROR) {
     if (unlikely(real_ops.ERROR == NULL)) 
@@ -981,18 +929,6 @@ OP_DEFINE(ERROR) {
         *slotfs_errno() = 0;
         return &err;
     }
-}
-
-void insert_real_op() {
-    if (initialized == 1)
-        return;
-    initialized = 1;
-
-    #define FILL_REL_SYSCALL(op) 	real_ops.op = dlsym(RTLD_NEXT, MK_STR3(ALIAS_##op));
-    #define FILL_REL_SYSCALL_WRAP(r, data, elem) 	FILL_REL_SYSCALL(elem)
-    
-    real_ops.ERROR = dlsym(RTLD_NEXT, "__errno_location");
-    BOOST_PP_SEQ_FOR_EACH(FILL_REL_SYSCALL_WRAP, placeholder, SLOTFS_ALL_OPS)
 }
 
 static __attribute__((constructor)) void slotfs_ctor(void) {

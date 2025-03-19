@@ -135,19 +135,19 @@ static inline void filent_free(filent_t *firent) {
 	arena_free(&sbi->entry_arena, firent);
 }
 
-
+#define logger_output(fmt, args ...) printf("%s:%d " fmt, __func__, __LINE__, ##args)
 #define logger_trace(s, args ...)		 \
-    ((void)((DBGMASK & DBGMASK_TRACE) ? printf(s, ##args) : 0))
+    ((void)((DBGMASK & DBGMASK_TRACE) ? logger_output(s, ##args) : 0))
 #define logger_debug(s, args ...)		 \
-    ((void)((DBGMASK & DBGMASK_DEBUG) ? printf(s, ##args) : 0))
+    ((void)((DBGMASK & DBGMASK_DEBUG) ? logger_output(s, ##args) : 0))
 #define logger_info(s, args ...)		 \
-    ((void)((DBGMASK & DBGMASK_INFO) ? printf(s, ##args) : 0))
+    ((void)((DBGMASK & DBGMASK_INFO) ? logger_output(s, ##args) : 0))
 #define logger_warn(s, args ...)		 \
-    ((void)((DBGMASK & DBGMASK_WARN) ? printf(s, ##args) : 0))
+    ((void)((DBGMASK & DBGMASK_WARN) ? logger_output(s, ##args) : 0))
 #define logger_fail(s, args ...)		 \
-    ((void)((DBGMASK & DBGMASK_FAIL) ? printf(s, ##args) : 0))
+    ((void)((DBGMASK & DBGMASK_FAIL) ? logger_output(s, ##args) : 0))
 #define syscall_trace(s, args ...)		 \
-	((void)((DBGMASK & DBGMASK_SYSCALL) ? printf(s, ##args) : 0))
+	((void)((DBGMASK & DBGMASK_SYSCALL) ? logger_output(s, ##args) : 0))
 
 #define IDX2INODE(idx) (sbi->super->slots[SLOT_INODE].slot_table + (idx) * sbi->super->slots[SLOT_INODE].slot_size) 
 #define IDX2DENT(idx) (sbi->super->slots[SLOT_DIR].slot_table + ((idx) * sbi->super->slots[SLOT_DIR].slot_size))

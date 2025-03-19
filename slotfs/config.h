@@ -54,7 +54,6 @@
 #define FD_MAX		    (4096 * 2)
 #define MAP_NUM         1
 /* shm layout */
-// TODO: 
 #define SHM_BASE    0x700000000000
 #define DAX_START   0x780000000000
 

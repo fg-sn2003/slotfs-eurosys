@@ -13,6 +13,7 @@
 #define SLOTFS_ALL_OPS    (OPEN) (CREAT) (LIBC_OPEN64) (OPEN64) (MKDIR) (CLOSE) (SEEK) \
                         (READ) (WRITE) (PREAD) (PREAD64) (PWRITE) (PWRITE64) \
                         (STAT) (STAT64) (FSTAT) (FSTAT64) (LSTAT) (LSTAT64) (FSTATFS) (XSTAT) (XSTAT64) (NEWFSTATAT)\
+                        (LXSTAT) (LXSTAT64) \
                         (FOPEN) (FOPEN64) (FPUTS) (FGETS) (FWRITE) (FREAD) (FCLOSE) (FSEEK) \
                         (OPENAT) (ACCESS) (TRUNC) (FTRUNC) (FSYNC) \
                         (READ2) (RENAME) (RMDIR) (FDATASYNC) (FCNTL) (FCNTL2) (FFLUSH) \
@@ -113,6 +114,10 @@
 #define ALIAS_FSTAT64 fstat64
 #define ALIAS_LSTAT lstat
 #define ALIAS_LSTAT64 lstat64
+
+#define ALIAS_LXSTAT __lxstat
+#define ALIAS_LXSTAT64 __lxstat64
+
 #define ALIAS_NEWFSTATAT newfstatat
 /* Now all the metadata operations */
 #define ALIAS_MKDIR mkdir
@@ -215,6 +220,8 @@
 #define RETT_FSTAT64 int
 #define RETT_LSTAT int
 #define RETT_LSTAT64 int
+#define RETT_LXSTAT int
+#define RETT_LXSTAT64 int
 #define RETT_NEWFSTATAT int
 /* Now all the metadata operations */
 #define RETT_MKDIR int
@@ -319,6 +326,8 @@
 #define INTF_FSTAT64 int file, struct stat64 *buf
 #define INTF_LSTAT const char *path, struct stat *buf
 #define INTF_LSTAT64 const char *path, struct stat64 *buf
+#define INTF_LXSTAT int val, const char *path, struct stat *buf
+#define INTF_LXSTAT64 int val, const char *path, struct stat64 *buf
 #define INTF_NEWFSTATAT int dirfd, const char *path, struct stat *buf, int flags
 /* Now all the metadata operations */
 #define INTF_MKDIR const char *path, uint32_t mode
