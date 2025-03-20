@@ -44,7 +44,7 @@
 #define DBGMASK_FAIL           	(0x00000020)
 #define DBGMASK_TEMP           	(0x00000040)
 #define DBGMASK_SYSCALL         (0x00000080)
-#define DBGMASK DBGMASK_ALL
+#define DBGMASK DBGMASK_NONE
 // #define DBGMASK (DBGMASK_NONE)
 
 #define MAX_STR_LEN     128     // < 4096 bytes

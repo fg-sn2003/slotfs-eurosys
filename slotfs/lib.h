@@ -10,16 +10,17 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define SLOTFS_ALL_OPS    (OPEN) (CREAT) (LIBC_OPEN64) (OPEN64) (MKDIR) (CLOSE) (SEEK) \
-                        (READ) (WRITE) (PREAD) (PREAD64) (PWRITE) (PWRITE64) \
+#define SLOTFS_ALL_OPS  (FOPEN) (MMAP) (MMAP64) (CLOSE) (READ) \
+                        (OPEN) (CREAT) (LIBC_OPEN64) (OPEN64) (MKDIR) (SEEK) \
+                        (WRITE) (PREAD) (PREAD64) (PWRITE) (PWRITE64) \
                         (STAT) (STAT64) (FSTAT) (FSTAT64) (LSTAT) (LSTAT64) (FSTATFS) (XSTAT) (XSTAT64) (NEWFSTATAT)\
                         (LXSTAT) (LXSTAT64) \
-                        (FOPEN) (FOPEN64) (FPUTS) (FGETS) (FWRITE) (FREAD) (FCLOSE) (FSEEK) \
+                        (FOPEN64) (FPUTS) (FGETS) (FWRITE) (FREAD) (FCLOSE) (FSEEK) \
                         (OPENAT) (ACCESS) (TRUNC) (FTRUNC) (FSYNC) \
                         (READ2) (RENAME) (RMDIR) (FDATASYNC) (FCNTL) (FCNTL2) (FFLUSH) \
-                        (OPENDIR) (CLOSEDIR) (READDIR) (READDIR64) (ERROR) (SYNC_FILE_RANGE) \
+                        (OPENDIR) (CLOSEDIR) (READDIR) (READDIR64) (SYNC_FILE_RANGE) \
                         (LINK) (UNLINK) (UNLINKAT) (SYMLINK) (SYMLINKAT) \
-                        (IOCTL) (FADVISE) (MMAP) (MMAP64)
+                        (IOCTL) (FADVISE)
 
 
 # define EMPTY(...)

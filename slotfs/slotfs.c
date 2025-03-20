@@ -79,7 +79,6 @@ void shm_map(char *shm, int *first_instance) {
 void slotfs_exit() {
     runtime_exit();
     
-    printf("%d exit: instance num = %d\n", getpid(), atomic_load(&sbi->instance) - 1);
     if (atomic_fetch_sub(&sbi->instance, 1) > 1)
         return;
         
@@ -182,7 +181,6 @@ int slotfs_init() {
     if (first_instance) {
         logger_info("%d: first instance\n", getpid());
 
-        printf("%p\n", sbi);
         memset(sbi, 0, sizeof(dram_sb_t));
         
         atomic_store(&sbi->magic, SUPER_BLOCK_MAGIC);
@@ -237,8 +235,6 @@ int slotfs_init() {
     runtime_init();
 
     btree_module_init(btree_node_alloc, btree_node_free);
-
-    printf("%d, init: instance num = %d\n", getpid(), atomic_load(&sbi->instance) + 1);
 
     atomic_fetch_add(&sbi->instance, 1);
 

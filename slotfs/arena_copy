@@ -1,0 +1,84 @@
+#include <stdatomic.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <assert.h>
+
+#define ALIGN(x, a) (((x) + ((a)-1)) & ~((a)-1))
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
+typedef struct arena {
+    void *mem;
+    size_t size;
+    size_t item_size;
+    _Atomic(void*) free_list;
+    _Atomic(size_t) used;
+    int type;
+    // 原来的锁成员已移除
+} arena_t;
+
+static int arena_number = 0;
+
+void arena_init(arena_t* allocator, void *mem, size_t size, size_t item_size) {
+    allocator->mem  = mem;
+    allocator->size = ALIGN(size, 8);
+    allocator->item_size = ALIGN(item_size, 8);
+    atomic_store(&allocator->free_list, NULL);
+    atomic_store(&allocator->used, 0);
+    allocator->type = arena_number++;
+
+    // 初始化空闲链表
+    size_t n = size / item_size;
+    void* free_list = NULL;
+    for (size_t i = 0; i < n; i++) {
+        void* item = (char*)mem + i * item_size;
+        // 将当前节点指向前一个节点形成链表
+        *(void**)item = free_list;
+        free_list = item;
+    }
+    atomic_store(&allocator->free_list, free_list);
+}
+
+void* arena_alloc(arena_t* allocator) {
+    void* item;
+    void* next;
+    // CAS 循环弹出自由链表头节点
+    do {
+        item = atomic_load_explicit(&allocator->free_list, memory_order_acquire);
+        if (unlikely(item == NULL)) {
+            printf("type %d\n", allocator->type);
+            assert(0 && "arena_alloc: allocator is full");
+            return NULL;
+        }
+        next = *(void**)item;
+        // 尝试将 free_list 从 item 更新为 next
+    } while (!atomic_compare_exchange_weak_explicit(&allocator->free_list,
+                                                      &item,
+                                                      next,
+                                                      memory_order_release,
+                                                      memory_order_relaxed));
+#ifdef SLOTFS_DEBUG
+    size_t used = atomic_fetch_add_explicit(&allocator->used, 1, memory_order_relaxed) + 1;
+    if (used > (allocator->size / allocator->item_size)) {
+        fprintf(stderr, "arena_alloc: allocator is full\n");
+        abort();
+    }
+#endif
+    return item;
+}
+
+void arena_free(arena_t* allocator, void* ptr) {
+    void* old_head;
+    // 在 ptr 中写入当前自由链表的头指针，然后尝试 CAS 将 free_list 指向 ptr
+    do {
+        old_head = atomic_load_explicit(&allocator->free_list, memory_order_acquire);
+        *(void**)ptr = old_head;
+    } while (!atomic_compare_exchange_weak_explicit(&allocator->free_list,
+                                                      &old_head,
+                                                      ptr,
+                                                      memory_order_release,
+                                                      memory_order_relaxed));
+#ifdef SLOTFS_DEBUG
+    atomic_fetch_sub_explicit(&allocator->used, 1, memory_order_relaxed);
+#endif
+}

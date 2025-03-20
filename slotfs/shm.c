@@ -101,6 +101,7 @@ int shm_init() {
 
     heap_init(&sbi->heap_allocator, (void *)HEAP_START, HEAP_SIZE);
     spin_lock_init(&sbi->heap_lock);
+
     logger_debug("new base %p, heap_base %p\n", base, (void *)HEAP_START);
 
     btree_module_init(btree_node_alloc, btree_node_free);

@@ -12,15 +12,14 @@
 #include <string.h>
 #include <sys/syscall.h>
 
+static int initialized = 0;
+static int initing = 0;
+
 static struct real_ops {
     #define DEC_REL_SYSCALL(op) 	real_##op##_t op;
     #define DEC_REL_SYSCALL_WRAP(r, data, elem) 	DEC_REL_SYSCALL(elem)
     BOOST_PP_SEQ_FOR_EACH(DEC_REL_SYSCALL_WRAP, placeholder, SLOTFS_ALL_OPS)
 } real_ops;
-
-void safe_print(const char *msg) {
-    syscall(SYS_write, 2, msg, strlen(msg));
-}
 
 void insert_real_op();
 
@@ -55,7 +54,7 @@ void insert_real_op();
 OP_DEFINE(SEEK) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("SEEK: %d, %ld, %d\n", file, offset, whence);
@@ -74,7 +73,7 @@ OP_DEFINE(SEEK64) {
 OP_DEFINE(FTRUNC) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("FTRUNC: %d, %ld\n", file, length);
@@ -93,9 +92,8 @@ OP_DEFINE(FTRUNC64) {
 OP_DEFINE(MMAP) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
-    
 
     syscall_trace("MMAP: %p, %ld, %d, %d, %d, %ld\n", addr, len, prot, flags,
                   file, off);
@@ -116,8 +114,8 @@ OP_DEFINE(MMAP64) {
  *******************************************************/
 OP_DEFINE(FSYNC) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("FSYNC: %d\n", file);
@@ -131,8 +129,8 @@ OP_DEFINE(FSYNC) {
 
 OP_DEFINE(FDATASYNC) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     if (fd >= FD_OFFSET && fd < (FD_MAX + FD_OFFSET)) {
@@ -144,8 +142,8 @@ OP_DEFINE(FDATASYNC) {
 
 OP_DEFINE(SYNC_FILE_RANGE) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     if (fd >= FD_OFFSET && fd < (FD_MAX + FD_OFFSET)) {
@@ -162,8 +160,8 @@ OP_DEFINE(MKDIR) {
     int ret;
 
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL))
+    
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("MKDIR: %s\n", path);
@@ -187,8 +185,8 @@ OP_DEFINE(MKDIR) {
 
 OP_DEFINE(OPENDIR) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL))
+    
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("OPENDIR: %s\n", path);
@@ -212,8 +210,8 @@ OP_DEFINE(OPENDIR) {
 
 OP_DEFINE(READDIR) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL))
+    
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("READDIR: %lu\n", (uint64_t)dirp);
@@ -227,8 +225,8 @@ OP_DEFINE(READDIR) {
 
 OP_DEFINE(RENAME) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("RENAME: %s -> %s\n", old, new);
@@ -259,8 +257,8 @@ OP_DEFINE(RENAME) {
  *******************************************************/
 OP_DEFINE(STAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("STAT: %s\n", path);
@@ -284,7 +282,8 @@ OP_DEFINE(STAT) {
 
 OP_DEFINE(STAT64) {
     INSERT_LATENCY
-    if (unlikely(real_ops.ERROR == NULL)) 
+
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("STAT64: %s\n", path);
@@ -308,8 +307,8 @@ OP_DEFINE(STAT64) {
 
 OP_DEFINE(XSTAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("XSTAT: %s\n", path);
@@ -333,8 +332,8 @@ OP_DEFINE(XSTAT) {
 
 OP_DEFINE(XSTAT64) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("XSTAT64: %s\n", path);
@@ -358,8 +357,8 @@ OP_DEFINE(XSTAT64) {
 
 OP_DEFINE(FSTAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("FSTAT: %d\n", file);
@@ -373,8 +372,8 @@ OP_DEFINE(FSTAT) {
 
 OP_DEFINE(FSTAT64) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("FSTAT64: %d\n", file);
@@ -388,8 +387,8 @@ OP_DEFINE(FSTAT64) {
 
 OP_DEFINE(NEWFSTATAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("NEWFSTATAT: %d, %s\n", dirfd, path);
@@ -421,8 +420,8 @@ OP_DEFINE(NEWFSTATAT) {
 
 OP_DEFINE(LSTAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("LSTAT: %s\n", path);
@@ -446,8 +445,8 @@ OP_DEFINE(LSTAT) {
 
 OP_DEFINE(LSTAT64) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("LSTAT64: %s\n", path);
@@ -471,8 +470,8 @@ OP_DEFINE(LSTAT64) {
 
 OP_DEFINE(LXSTAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("LXSTAT: %d, %s\n", val, path);
@@ -496,8 +495,8 @@ OP_DEFINE(LXSTAT) {
 
 OP_DEFINE(LXSTAT64) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("LXSTAT64: %d, %s\n", val, path);
@@ -526,8 +525,8 @@ OP_DEFINE(OPEN) {
     int ret;
 
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL))
+    
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("OPEN: %s, create: %s, oflag: %x\n", path,
@@ -576,8 +575,8 @@ OP_DEFINE(OPEN) {
 
 OP_DEFINE(OPENAT) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("OPENAT: %s, create: %s, oflag: %x\n", path,
@@ -658,8 +657,8 @@ OP_DEFINE(LIBC_OPEN64) {
 
 OP_DEFINE(CLOSE) {
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL)) 
+    
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("CLOSE: %d\n", file);
@@ -678,8 +677,8 @@ OP_DEFINE(LINK) {
     int ret;
 
     INSERT_LATENCY
-
-    if (unlikely(real_ops.ERROR == NULL))
+    
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("LINK: %s -> %s\n", newpath, oldpath);
@@ -710,7 +709,7 @@ OP_DEFINE(UNLINK) {
 
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL))
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("UNLINK: %s\n", path);
@@ -737,7 +736,7 @@ OP_DEFINE(SYMLINK) {
 
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL))
+    if (unlikely(initialized == 0))
         insert_real_op();
 
     syscall_trace("SYMLINK: %s -> %s\n", link, target);
@@ -769,7 +768,7 @@ OP_DEFINE(SYMLINK) {
 OP_DEFINE(READ) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     syscall_trace("READ: %d, %p, %ld\n", file, buf, length);
@@ -784,7 +783,7 @@ OP_DEFINE(READ) {
 OP_DEFINE(WRITE) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     syscall_trace("WRITE: %d, %p, %ld\n", file, buf, length);
@@ -803,7 +802,7 @@ OP_DEFINE(READ2) {
 OP_DEFINE(PREAD) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     syscall_trace("PREAD: %d, %p, %ld, %ld\n", file, buf, count, offset);
@@ -821,8 +820,8 @@ OP_DEFINE(PREAD64) {
 
 OP_DEFINE(PWRITE) {
     INSERT_LATENCY
-    
-    if (unlikely(real_ops.ERROR == NULL)) 
+
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     syscall_trace("PWRITE: %d, %p, %ld, %ld\n", file, buf, count, offset);
@@ -844,9 +843,8 @@ OP_DEFINE(PWRITE64) {
 OP_DEFINE(FOPEN) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
-    
     if (*path == '\\' || *path != '/') {
         FILE *ret;
 
@@ -867,7 +865,7 @@ OP_DEFINE(FOPEN) {
 OP_DEFINE(FPUTS) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     if (1) {
@@ -882,7 +880,7 @@ OP_DEFINE(FPUTS) {
 OP_DEFINE(FGETS) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     if (likely(stream)) {
@@ -897,7 +895,7 @@ OP_DEFINE(FGETS) {
 OP_DEFINE(FWRITE) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     if (1) {
@@ -911,7 +909,7 @@ OP_DEFINE(FWRITE) {
 OP_DEFINE(FREAD) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     if (likely(fp)) {
@@ -925,7 +923,7 @@ OP_DEFINE(FREAD) {
 OP_DEFINE(FCLOSE) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     if (likely(fp)) {
@@ -939,7 +937,7 @@ OP_DEFINE(FCLOSE) {
 OP_DEFINE(FSEEK) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
 
     syscall_trace("FSEEK: %p, %ld, %d\n", fp, offset, whence);
@@ -956,7 +954,7 @@ OP_DEFINE(FSEEK) {
 OP_DEFINE(FFLUSH) {
     INSERT_LATENCY
 
-    if (unlikely(real_ops.ERROR == NULL)) 
+    if (unlikely(initialized == 0)) 
         insert_real_op();
     
     if (likely(fp)) {
@@ -968,31 +966,39 @@ OP_DEFINE(FFLUSH) {
     return real_ops.FFLUSH(fp);
 }
 
-static int initialized = 0;
-static int err;
-OP_DEFINE(ERROR) {
-    if (unlikely(real_ops.ERROR == NULL)) 
-        insert_real_op();
+// static int err;
+// OP_DEFINE(ERROR) {
+    //     if (unlikely(initialized == 0)) 
+    //         insert_real_op();
+    
+    //     if (*slotfs_errno() == 0) {
+        //         return real_ops.WRITE();
+        //     } else {
+            //         err = *slotfs_errno();
+            //         *slotfs_errno() = 0;
+            //         return &err;
+            //     }
+            // }
 
-    if (*slotfs_errno() == 0) {
-        return real_ops.ERROR();
-    } else {
-        err = *slotfs_errno();
-        *slotfs_errno() = 0;
-        return &err;
-    }
+
+void safe_print(const char *msg) {
+    syscall(SYS_write, 2, msg, strlen(msg));
 }
 
 void insert_real_op() {
-    if (initialized == 1)
+    if (initing == 1 || initialized == 1)
         return;
-    initialized = 1;
+    initing = 1;
 
     #define FILL_REL_SYSCALL(op) 	real_ops.op = dlsym(RTLD_NEXT, MK_STR3(ALIAS_##op));
     #define FILL_REL_SYSCALL_WRAP(r, data, elem) 	FILL_REL_SYSCALL(elem)
-    
-    real_ops.ERROR = dlsym(RTLD_NEXT, "__errno_location");
+
+    __sync_synchronize();
     BOOST_PP_SEQ_FOR_EACH(FILL_REL_SYSCALL_WRAP, placeholder, SLOTFS_ALL_OPS)
+    __sync_synchronize();
+    
+    initing = 0;
+    initialized = 1;
 }
 
 static __attribute__((constructor)) void slotfs_ctor(void) {
