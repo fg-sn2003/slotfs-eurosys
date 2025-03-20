@@ -20,24 +20,31 @@ static inline int spin_trylock(spinlock_t *lock) {
 	return pthread_spin_trylock(lock);
 }
 
-typedef enum { RLOCK_FREE, RLOCK_READ, RLOCK_WRITE } lock_type_t;
+#define RLOCK_NUM 20
+#define LOCK_READ  0
+#define LOCK_WRITE 1
 
-#define MAX_LOCKS 20
+// 使用数组存储加锁区间，新增 mode 字段
 typedef struct {
 	uint64_t start;
 	uint64_t end;
-	lock_type_t type;
-	int refcount;
-} rlock_entry_t;
+	bool valid;
+	int mode;  // LOCK_READ 或 LOCK_WRITE
+} rlock_node_t;
 
+// 使用固定数组存储所有锁区间
 typedef struct range_lock {
-	rlock_entry_t rlock[MAX_LOCKS];
-	spinlock_t spin;
-	int lock_count;
+	rlock_node_t rlock[RLOCK_NUM];
+	spinlock_t global_lock;
 } range_lock_t;
 
+// 初始化 range_lock
 void range_lock_init(range_lock_t *lock);
-int range_lock_read(range_lock_t *lock, uint64_t start, uint64_t end);
-int range_lock_write(range_lock_t *lock, uint64_t start, uint64_t end);
-void range_unlock(range_lock_t *lock, int ticket);
-#endif
+
+// 新接口：对指定区间以指定模式加锁，成功返回 ticket（数组下标），用于后续解锁
+int rl_lock(range_lock_t *lock, uint64_t start, uint64_t end, int mode);
+
+// 根据 ticket 解锁
+void rl_unlock(range_lock_t *lock, int ticket);
+
+#endif // LOCK_H

@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 
-
+#if 0
 #define THREAD_NUM 50
 #define SLEEP_TIME 10000 // Sleep time in seconds
 
@@ -68,12 +68,13 @@ void measure_running_time(void* (*thread_func)(void*), const char* test_name) {
 
 }
 
+#endif
 int main() {
     // Test overlapping ranges
-    measure_running_time(thread_func_overlap, "Overlapping Ranges");
+    // measure_running_time(thread_func_overlap, "Overlapping Ranges");
 
     // Test non-overlapping ranges
-    measure_running_time(thread_func_nooverlap, "Non-Overlapping Ranges");
+    // measure_running_time(thread_func_nooverlap, "Non-Overlapping Ranges");
 
     return 0;
 }

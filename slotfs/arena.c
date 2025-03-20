@@ -30,7 +30,6 @@ void* arena_alloc(arena_t* allocator) {
     spin_lock(&allocator->lock);
     if (unlikely(allocator->free_list == NULL)) {
         spin_unlock(&allocator->lock);
-        printf("type %d\n", allocator->type);
         debug_assert(0);
         return NULL;
     }

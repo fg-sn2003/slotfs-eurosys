@@ -1,0 +1,71 @@
+#include "lock.h"
+#include "config.h"
+#include <assert.h>
+#include <sched.h>
+#include <time.h>
+
+// 判断两个区间是否重叠
+static inline bool is_overlap(uint64_t s1, uint64_t e1, uint64_t s2, uint64_t e2) {
+    return (s1 < e2) && (s2 < e1);
+}
+
+void range_lock_init(range_lock_t *lock) {
+    lock->head = NULL;
+    for (int i = 0; i < RLOCK_NUM; i++) {
+        lock->rlock[i].valid = false;
+    }
+    spin_lock_init(&lock->global_lock);
+}
+
+// 使用数组实现的区间锁，返回数组下标作为 ticket
+int rl_lock(range_lock_t *lock, uint64_t start, uint64_t end, int mode) {
+    struct timespec ts = {0, 1000000}; // 1ms休眠
+    while (1) {
+        spin_lock(&lock->global_lock);
+        bool conflict = false;
+        for (int i = 0; i < RLOCK_NUM; i++) {
+            if (lock->rlock[i].valid) {
+                if (is_overlap(start, end, lock->rlock[i].start, lock->rlock[i].end)) {
+                    if (mode == LOCK_WRITE || lock->rlock[i].mode == LOCK_WRITE) {
+                        conflict = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!conflict) {
+            int slot = -1;
+            for (int i = 0; i < RLOCK_NUM; i++) {
+                if (!lock->rlock[i].valid) {
+                    slot = i;
+                    break;
+                }
+            }
+            if (slot == -1) {
+                spin_unlock(&lock->global_lock);
+                nanosleep(&ts, NULL); // 等待1ms再重试
+                continue;
+            }
+            lock->rlock[slot].valid = true;
+            lock->rlock[slot].start = start;
+            lock->rlock[slot].end = end;
+            lock->rlock[slot].mode = mode;
+            spin_unlock(&lock->global_lock);
+            return slot;
+        }
+        spin_unlock(&lock->global_lock);
+        nanosleep(&ts, NULL);  // 冲突时等待1ms再重试
+    }
+}
+
+// 根据 ticket 解锁，对应数组下标置为无效
+void rl_unlock(range_lock_t *lock, int ticket) {
+    spin_lock(&lock->global_lock);
+    if (ticket >= 0 && ticket < RLOCK_NUM && lock->rlock[ticket].valid) {
+        lock->rlock[ticket].valid = false;
+    } else {
+        assert(0);
+    }
+    spin_unlock(&lock->global_lock);
+}
+

@@ -1,72 +1,108 @@
 #include "lock.h"
 #include "config.h"
 #include <assert.h>
-
-static bool is_overlap(uint64_t start1, uint64_t end1, uint64_t start2, uint64_t end2) {
-    return (start1 < end2) && (start2 < end1);
-}
+#include <sched.h>
+#include <time.h>
 
 void range_lock_init(range_lock_t *lock) {
-    for (int i = 0; i < RLOCK_NUM; i++) {
-        lock->rlock[i].valid = false;
+    for (int i = 0; i < MAX_LOCKS; i++) {
+        lock->rlock[i].type = RLOCK_FREE;
     }
-    spin_lock_init(&lock->global_lock);
+    spin_lock_init(&lock->spin);
     lock->lock_count = 0;
 }
 
-void range_lock(range_lock_t *lock, uint64_t start, uint64_t end) {
-    do {
-        spin_lock(&lock->global_lock);
-        if (likely(lock->lock_count == 0)) {
-            lock->rlock[0].valid = true;
-            lock->rlock[0].start = start;
-            lock->rlock[0].end = end;
-            lock->lock_count++;
-            spin_unlock(&lock->global_lock);
-            return;
-        }
+int range_lock_write(range_lock_t *lock, uint64_t start, uint64_t end) {
+retry_write:
+    spin_lock(&lock->spin);
+    
+    if (lock->lock_count == 0) {
+        lock->rlock[0].start = start;
+        lock->rlock[0].end = end;
+        lock->rlock[0].type = RLOCK_WRITE;
+        lock->lock_count++;
+        spin_unlock(&lock->spin);
+        return 0;
+    }
+    
+    for (int i = 0; i < MAX_LOCKS; i++) {
+        rlock_entry_t *entry = &lock->rlock[i];
+        if (entry->type != RLOCK_FREE && 
+            (entry->start <= end) && (start <= entry->end)) {
+            spin_unlock(&lock->spin);
 
-        bool overlap = false;
-        for (int i = 0; i < RLOCK_NUM; i++) {
-            if (lock->rlock[i].valid && is_overlap(start, end, lock->rlock[i].start, lock->rlock[i].end)) {
-                overlap = true;
-                // for (int i = 0; i < 1000000; i++) {
-                    
-                // }
-                break;
-            }
-        }
-
-        if (!overlap) {
-            for (int i = 0; i < RLOCK_NUM; i++) {
-                if (!lock->rlock[i].valid) {
-                    lock->rlock[i].valid = true;
-                    lock->rlock[i].start = start;
-                    lock->rlock[i].end = end;
-                    lock->lock_count++;
-                    spin_unlock(&lock->global_lock);
-                    return;
-                }
-            }
-        }
-        spin_unlock(&lock->global_lock);
-
-        do {} while (lock->lock_count == RLOCK_NUM);
-    } while (1);
-}
-
-void range_unlock(range_lock_t *lock, uint64_t start, uint64_t end) {
-    spin_lock(&lock->global_lock);
-    for (int i = 0; i < RLOCK_NUM; i++) {
-        if (lock->rlock[i].valid && lock->rlock[i].start == start 
-            && lock->rlock[i].end == end) {
-            lock->rlock[i].valid = false;
-            lock->lock_count--;
-            spin_unlock(&lock->global_lock);
-            return;
+            // TODO: make this more efficient
+            struct timespec ts = {0, 1000};
+            nanosleep(&ts, NULL);
+            goto retry_write;
         }
     }
-    spin_unlock(&lock->global_lock);
-    assert(0);
+
+    int ticket = -1;
+    for (int i = 0; i < MAX_LOCKS; i++) {
+        if (lock->rlock[i].type == RLOCK_FREE) {
+            lock->rlock[i].start = start;
+            lock->rlock[i].end = end;
+            lock->rlock[i].type = RLOCK_WRITE;
+            ticket = i;
+            lock->lock_count++;
+            break;
+        }
+    }
+
+    spin_unlock(&lock->spin);
+    return ticket;
 }
 
+int range_lock_read(range_lock_t *lock, uint64_t start, uint64_t end) {
+retry_read:
+    spin_lock(&lock->spin);
+    
+    if (lock->lock_count == 0) {
+        lock->rlock[0].start = start;
+        lock->rlock[0].end = end;
+        lock->rlock[0].type = RLOCK_READ;
+        lock->lock_count++;
+        spin_unlock(&lock->spin);
+        return 0;
+    }
+
+    for (int i = 0; i < MAX_LOCKS; i++) {
+        rlock_entry_t *entry = &lock->rlock[i];
+        if (entry->type == RLOCK_WRITE && 
+            (entry->start <= end) && (start <= entry->end)) {
+            spin_unlock(&lock->spin);
+            
+            struct timespec ts = {0, 1000};
+            nanosleep(&ts, NULL);
+            goto retry_read;
+        }
+    }
+
+    int ticket = -1;
+    for (int i = 0; i < MAX_LOCKS; i++) {
+        if (lock->rlock[i].type == RLOCK_FREE) {
+            lock->rlock[i].start = start;
+            lock->rlock[i].end = end;
+            lock->rlock[i].type = RLOCK_READ;
+            ticket = i;
+            lock->lock_count++;
+            break;
+        }
+    }
+
+    spin_unlock(&lock->spin);
+    return ticket;
+}
+
+void range_unlock(range_lock_t *lock, int ticket) {
+    spin_lock(&lock->spin);
+
+    assert(ticket >= 0 && ticket < MAX_LOCKS);
+    
+    rlock_entry_t *entry = &lock->rlock[ticket];
+    entry->type = RLOCK_FREE;
+    lock->lock_count--;
+
+    spin_unlock(&lock->spin);
+}
